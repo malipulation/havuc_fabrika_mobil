@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 
@@ -15,9 +16,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: ElevatedButton(
           child: Text("Çıkış(Test)"),
-          onPressed: (){
-            Navigator.push(context,
-            MaterialPageRoute(builder: (context)=>SignInScreen()));
+          onPressed: () {
+            FirebaseAuth.instance.signOut().then((value) {
+              print("Çıkış Yapıldı");
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SignInScreen()));
+            });
           },
         ),
       ),

@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/homescreen/HomeScreen.dart';
 import 'package:havuc_fabrika_mobil/reusable_widgets/ReusableWidget.dart';
@@ -15,8 +17,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordTextController = TextEditingController();
   TextEditingController _emailTextController = TextEditingController();
   TextEditingController _nameSurnameTextController = TextEditingController();
-  @override
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -55,14 +57,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                reusableTextField("Şifre", Icons.lock_outline, true,
-                    _emailTextController),
+                reusableTextField(
+                    "Şifre", Icons.lock_outline, true, _passwordTextController),
                 const SizedBox(
                   height: 20,
                 ),
-                signInSignUpButton(context, false, (){
-                  Navigator.push(context,
-                  MaterialPageRoute(builder: (context)=>SignInScreen()));
+                signInSignUpButton(context, false, () {
+                  FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                          email: _emailTextController.text,
+                          password: _passwordTextController.text)
+                      .then((value) {
+                        print("Hesap Oluşturuldu");
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SignInScreen()));
+                  }).onError((error, stackTrace) {
+                    print("Error ${error.toString()}");
+                  });
                 })
               ],
             ),

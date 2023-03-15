@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/homescreen/HomeScreen.dart';
@@ -23,14 +24,17 @@ class _SignInScreenState extends State<SignInScreen> {
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
-          hexStringToColor("CB2B93"),
-          hexStringToColor("9546C4"),
-          hexStringToColor("5E61F4")
-        ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              hexStringToColor("CB2B93"),
+              hexStringToColor("9546C4"),
+              hexStringToColor("5E61F4")
+            ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-                50, MediaQuery.of(context).size.height * 0.2, 40, 1000),
+                50, MediaQuery
+                .of(context)
+                .size
+                .height * 0.2, 40, 1000),
             child: Column(
               children: <Widget>[
                 logoWidget("assets/images/logo-no-background.png"),
@@ -48,8 +52,13 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 signInSignUpButton(context, true, () {
-                Navigator.push(context,
-                MaterialPageRoute(builder: (context)=>HomeScreen()));
+                  FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: _emailTextController.text,
+                      password: _passwordTextController.text).then((value){
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()));
+                  } );
+
                 }),
                 signUpOption()
               ],
@@ -60,19 +69,19 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Row signUpOption(){
+  Row signUpOption() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text("Hesabınız yok mu?"),
         GestureDetector(
-          onTap: (){
+          onTap: () {
             Navigator.push(context,
-            MaterialPageRoute(builder: (context)=>SignUpScreen()));
+                MaterialPageRoute(builder: (context) => SignUpScreen()));
           },
           child: const Text(
             "  Kayıt Ol",
-            style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         )
       ],
