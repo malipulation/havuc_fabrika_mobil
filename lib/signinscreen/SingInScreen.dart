@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:havuc_fabrika_mobil/homescreen/HomeScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 
 import '../reusable_widgets/ReusableWidget.dart';
+import '../singupscreen/SignUpScreen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   TextEditingController _emailTextController = TextEditingController();
   TextEditingController _passwordTextController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,18 +30,28 @@ class _SignInScreenState extends State<SignInScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-                100, MediaQuery.of(context).size.height * 0.2, 100, 1000),
+                50, MediaQuery.of(context).size.height * 0.2, 40, 1000),
             child: Column(
               children: <Widget>[
                 logoWidget("assets/images/logo-no-background.png"),
                 const SizedBox(
-                  height: 30,
+                  height: 40,
                 ),
-                reusableTextField("Kullanıcı Adı", Icons.person_outline, false, _emailTextController),
+                reusableTextField("Kullanıcı Adı", Icons.person_outline, false,
+                    _emailTextController),
                 const SizedBox(
                   height: 20,
                 ),
-                reusableTextField("Şifre", Icons.lock_outline, true, _passwordTextController),
+                reusableTextField(
+                    "Şifre", Icons.lock_outline, true, _passwordTextController),
+                const SizedBox(
+                  height: 20,
+                ),
+                signInSignUpButton(context, true, () {
+                Navigator.push(context,
+                MaterialPageRoute(builder: (context)=>HomeScreen()));
+                }),
+                signUpOption()
               ],
             ),
           ),
@@ -46,6 +59,23 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
   }
+
+  Row signUpOption(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Hesabınız yok mu?"),
+        GestureDetector(
+          onTap: (){
+            Navigator.push(context,
+            MaterialPageRoute(builder: (context)=>SignUpScreen()));
+          },
+          child: const Text(
+            "  Kayıt Ol",
+            style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),
+          ),
+        )
+      ],
+    );
+  }
 }
-
-

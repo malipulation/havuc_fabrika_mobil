@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1032677290094",
+    "firebase_url": "https://havuc-fabrika-default-rtdb.firebaseio.com",
+    "project_id": "havuc-fabrika",
+    "storage_bucket": "havuc-fabrika.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032677290094:android:83b8e18314209fdfd0767f",
+        "android_client_info": {
+          "package_name": "com.example.havuc_fabrika_mobil"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1032677290094-rrtku0mco0ihlc608ihq9grg5m9gbj2v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8_Gh2s4yW48dYIp5-NLGKxK7sLPXlL7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1032677290094-rrtku0mco0ihlc608ihq9grg5m9gbj2v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
