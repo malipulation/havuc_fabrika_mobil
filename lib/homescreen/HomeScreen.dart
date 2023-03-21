@@ -1,30 +1,161 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
+import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
+import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+
+import 'package:flutter/material.dart';
+
+import '../reusable_widgets/ReusableWidget.dart';
+
+class GridMenu extends StatefulWidget {
+  const GridMenu({Key? key}) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _GridMenuState createState() => _GridMenuState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _GridMenuState extends State<GridMenu> {
+  User? _user;
+  DatabaseReference? _userRef;
+  Uint8List? _imageBytes;
+
   @override
+  void initState() {
+    super.initState();
+    _user = FirebaseAuth.instance.currentUser;
+    _userRef = FirebaseDatabase.instance.reference().child('users').child(_user!.uid);
+    _userRef!.child('profileImage').onValue.listen((event) {
+      final data = event.snapshot.value;
+      if (data != null) {
+        setState(() {
+          _imageBytes = base64Decode(data.toString());
+        });
+      }
+    });
+  }
+
+  @override
+
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          child: Text("Çıkış(Test)"),
-          onPressed: () {
-            FirebaseAuth.instance.signOut().then((value) {
-              print("Çıkış Yapıldı");
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => SignInScreen()));
-            });
-          },
+      appBar: AppBar(
+        title: const Text('Ana Sayfa'),
+        backgroundColor: Colors.deepPurple,
+        leading: Builder(
+          builder: (context) =>
+              IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
+        ),
+      ),
+      // Drawer ekleyin
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(_user?.displayName ?? ''),
+              accountEmail: Text(_user?.email ?? ''),
+              currentAccountPicture: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(),
+                    ),
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: _imageBytes != null ? MemoryImage(_imageBytes!) : null,
+                  // child: _imageBytes == null ? Image.network(_defaultImageUrl) : null,
+                ),
+
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.deepPurple,
+              ),
+              onDetailsPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              title: const Text('Detaylı Gider Listesi'),
+              onTap: () {
+              },
+            ),
+            ListTile(
+              title: const Text('Detaylı Satış Listesi'),
+              onTap: () {
+              },
+            ),
+            ListTile(
+              title: const Text('İşçiler'),
+              onTap: () {
+              },
+            ),
+            ListTile(
+              title: const Text('Şirketler'),
+              onTap: () {
+              },
+            ),
+            ListTile(
+              title: const Text('Çıkış'),
+              onTap: () {
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Container(
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              hexStringToColor("CB2B93"),
+              hexStringToColor("9546C4"),
+              hexStringToColor("5E61F4")
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: GridView.count(
+          crossAxisCount: 2,
+          padding: const EdgeInsets.all(16.0),
+          mainAxisSpacing: 16.0,
+          crossAxisSpacing: 16.0,
+          children: [
+            buildMenuItem(Icons.account_circle_sharp, 'İşçi Ekle'),
+            buildMenuItem(Icons.checklist_rtl_rounded, 'Listele'),
+            buildMenuItem(Icons.update, 'Paket Güncelle'),
+            buildMenuItem(Icons.add_shopping_cart_rounded, 'Giderler'),
+            buildMenuItem(Icons.point_of_sale_rounded, 'Satış Yap'),
+            buildMenuItem(Icons.settings, 'Ayarlar'),
+          ],
         ),
       ),
     );
   }
+
 }
