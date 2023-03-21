@@ -67,3 +67,39 @@ Container signInSignUpButton(
     ),
   );
 }
+
+Widget buildMenuItem(IconData iconData, String title) {
+  return InkWell(
+    onTap: () {
+      print('$title pressed');
+    },
+    child: Card(
+      color: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      elevation: 4.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            color: Colors.white,
+            iconData,
+            size: 48.0,
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+

@@ -68,6 +68,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           email: _emailTextController.text,
                           password: _passwordTextController.text)
                       .then((value) {
+                    FirebaseAuth.instance.currentUser?.updateProfile(
+                        displayName: _nameSurnameTextController.text
+                    );
                         print("Hesap Oluşturuldu");
                     Navigator.push(
                         context,
