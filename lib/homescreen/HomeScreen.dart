@@ -1,15 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
-
-import 'package:flutter/material.dart';
-
 import '../reusable_widgets/ReusableWidget.dart';
 
 class GridMenu extends StatefulWidget {
@@ -20,6 +16,7 @@ class GridMenu extends StatefulWidget {
 }
 
 class _GridMenuState extends State<GridMenu> {
+  final _auth = FirebaseAuth.instance;
   User? _user;
   DatabaseReference? _userRef;
   Uint8List? _imageBytes;
@@ -28,7 +25,7 @@ class _GridMenuState extends State<GridMenu> {
   void initState() {
     super.initState();
     _user = FirebaseAuth.instance.currentUser;
-    _userRef = FirebaseDatabase.instance.reference().child('users').child(_user!.uid);
+    _userRef = FirebaseDatabase.instance.ref().child('users').child(_user!.uid);
     _userRef!.child('profileImage').onValue.listen((event) {
       final data = event.snapshot.value;
       if (data != null) {
@@ -87,7 +84,7 @@ class _GridMenuState extends State<GridMenu> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProfileScreen(),
+                    builder: (context) => const ProfileScreen(),
                   ),
                 );
               },
@@ -114,7 +111,12 @@ class _GridMenuState extends State<GridMenu> {
             ),
             ListTile(
               title: const Text('Çıkış'),
-              onTap: () {
+              onTap:  ()async {
+                await _auth.signOut();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SignInScreen()));
               },
             ),
           ],
@@ -157,5 +159,4 @@ class _GridMenuState extends State<GridMenu> {
       ),
     );
   }
-
 }
