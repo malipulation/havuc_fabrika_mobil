@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:havuc_fabrika_mobil/addworkerscreen/addworkerscreen.dart';
+import 'package:havuc_fabrika_mobil/listworkerscreen/ListWorkerScreen.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
@@ -142,21 +144,66 @@ class _GridMenuState extends State<GridMenu> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: GridView.count(
+        child:GridView.count(
           crossAxisCount: 2,
           padding: const EdgeInsets.all(16.0),
           mainAxisSpacing: 16.0,
           crossAxisSpacing: 16.0,
           children: [
-            buildMenuItem(Icons.account_circle_sharp, 'İşçi Ekle'),
-            buildMenuItem(Icons.checklist_rtl_rounded, 'Listele'),
-            buildMenuItem(Icons.update, 'Paket Güncelle'),
-            buildMenuItem(Icons.add_shopping_cart_rounded, 'Giderler'),
-            buildMenuItem(Icons.point_of_sale_rounded, 'Satış Yap'),
-            buildMenuItem(Icons.settings, 'Ayarlar'),
+            buildMenuItem(context, Icons.account_circle_sharp, 'İşçi Ekle'),
+            buildMenuItem(context, Icons.checklist_rtl_rounded, 'Listele'),
+            buildMenuItem(context, Icons.update, 'Paket Güncelle'),
+            buildMenuItem(context, Icons.add_shopping_cart_rounded, 'Giderler'),
+            buildMenuItem(context, Icons.point_of_sale_rounded, 'Satış Yap'),
+            buildMenuItem(context, Icons.settings, 'Ayarlar'),
           ],
         ),
+
       ),
     );
   }
+}
+InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
+  return InkWell(
+    onTap: () {
+      if (title == 'İşçi Ekle') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddWorkerScreen()),
+        );
+      }
+      else if (title == 'Listele') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListWorkerScreen()),
+        );
+      }
+    },
+    child: Card(
+      color: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      elevation: 4.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            color: Colors.white,
+            iconData,
+            size: 48.0,
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
