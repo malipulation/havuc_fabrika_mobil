@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ListWorkerScreen extends StatefulWidget {
   const ListWorkerScreen({Key? key}) : super(key: key);
@@ -29,17 +30,26 @@ class Employee {
   }
 }
 
+extension IterableExtension<E> on Iterable<E> {
+  Map<int, E> asMap() {
+    var index = 0;
+    return Map.fromIterable(this,
+        key: (item) => index++, value: (item) => item);
+  }
+}
+
 class _ListWorkerScreenState extends State<ListWorkerScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
+  List<TextEditingController> controllers = [];
 
-  List<Employee> _dataList =
-      []; // _dataList değişkeni List<Employee> türünde tanımlandı
+  List<Employee> _dataList = [];
   final _searchController =
       TextEditingController(); // Textfield için controller
 
   @override
   void dispose() {
     _searchController.dispose(); // Controller'ın bellekten atılması
+    controllers.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
@@ -73,6 +83,8 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
 
         setState(() {
           _dataList = employeeList;
+          controllers =
+              List.generate(_dataList.length, (_) => TextEditingController());
         });
       }
     } catch (error) {
@@ -86,6 +98,27 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       final queryLower = query.toLowerCase();
       return nameSurnameLower.contains(queryLower);
     }).toList();
+  }
+
+  void _saveDataToFirebase() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final now = DateTime.now();
+    final dateFormat = DateFormat('dd-MM-yyyy');
+    final dateString = dateFormat.format(now);
+    final databaseRef = FirebaseDatabase.instance
+        .reference()
+        .child('${currentUser?.uid}/isegelenlertbl$dateString');
+    int i = 0;
+    for (final data in _dataList) {
+      if (controllers[i].text != '') {
+        databaseRef.child(data.nameSurname).set({
+          'nameSurname': data.nameSurname,
+          'overSupply': data.overSupply,
+          'queNumber': controllers[i].text,
+        });
+      }
+      i++;
+    }
   }
 
   @override
@@ -105,6 +138,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
         ),
         child: Stack(
           children: [
+            // İşçi listesi logoyla birlikte görüntülenir.
             Positioned(
               top: MediaQuery.of(context).size.height * 0.2,
               left: MediaQuery.of(context).size.width * 0.1,
@@ -119,72 +153,63 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
             ),
             Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      setState(
-                          () {}); // Yeniden render için setState() çağırılıyor
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'İşçi Adı Ara',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                  ),
-                ),
                 Expanded(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        columns: const [
-                          DataColumn(
-                            label: Text('İşçi Adı'),
-                            tooltip: 'NameSurname',
-                          ),
-                          DataColumn(
-                            label: Text('Telefon Numarası'),
-                            tooltip: 'PhoneNumber',
-                          ),
-                          DataColumn(
-                            label: Text('Fazlalık'),
-                            tooltip: 'OverSupply',
-                          ),
-                        ],
-                        rows: _searchController.text.isEmpty
-                            ? _dataList
-                                .map(
-                                  (data) => DataRow(
-                                    cells: [
-                                      DataCell(Text(data.nameSurname)),
-                                      DataCell(Text(data.phoneNumber)),
-                                      DataCell(Text(data.overSupply))
-                                    ],
-                                  ),
-                                )
-                                .toList()
-                            : _dataList
-                                .where((data) => data.nameSurname
-                                    .toLowerCase()
-                                    .contains(_searchController.text))
-                                .map(
-                                  (data) => DataRow(
-                                    cells: [
-                                      DataCell(Text(data.nameSurname)),
-                                      DataCell(Text(data.phoneNumber)),
-                                      DataCell(Text(data.overSupply)),
-                                    ],
-                                  ),
-                                )
-                                .toList(),
-                      ),
+                          columns: const [
+                            DataColumn(
+                              label: Text('İşe Geldi Mi?'),
+                              tooltip: 'Worked',
+                            ),
+                            DataColumn(
+                              label: Text('İşçi Adı'),
+                              tooltip: 'NameSurname',
+                            ),
+                            DataColumn(
+                              label: Text('Telefon Numarası'),
+                              tooltip: 'PhoneNumber',
+                            ),
+                            DataColumn(
+                              label: Text('Fazlalık'),
+                              tooltip: 'OverSupply',
+                            ),
+                          ],
+                          rows: _dataList
+                              .asMap()
+                              .map((index, data) => MapEntry(
+                                    index,
+                                    DataRow(
+                                      cells: [
+                                        DataCell(
+                                          SizedBox(
+                                            width: 100,
+                                            child: TextField(
+                                              controller: controllers[index],
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Sıra',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(Text(data.nameSurname)),
+                                        DataCell(Text(data.phoneNumber)),
+                                        DataCell(Text(data.overSupply)),
+                                      ],
+                                    ),
+                                  ))
+                              .values
+                              .toList()),
                     ),
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: _saveDataToFirebase,
+                  child: const Text('Günü Başlat'),
                 ),
               ],
             ),

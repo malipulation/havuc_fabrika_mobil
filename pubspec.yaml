@@ -38,7 +38,7 @@ dependencies:
   firebase_auth: ^4.2.10
   image_picker: ^0.8.4
   firebase_database: ^10.0.1
-
+  intl: ^0.17.0
 #  firebase_database: ^8.0.0
 
 
