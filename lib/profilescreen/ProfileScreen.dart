@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:bs_flutter_datatable/bs_flutter_datatable.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -99,7 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

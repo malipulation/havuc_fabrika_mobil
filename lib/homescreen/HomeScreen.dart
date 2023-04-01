@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/addworkerscreen/addworkerscreen.dart';
 import 'package:havuc_fabrika_mobil/listworkerscreen/ListWorkerScreen.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
+import 'package:havuc_fabrika_mobil/settings/settingsscreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import '../reusable_widgets/ReusableWidget.dart';
@@ -176,6 +177,12 @@ InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListWorkerScreen()),
+        );
+      }
+      else if (title == 'Ayarlar') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
       }
     },

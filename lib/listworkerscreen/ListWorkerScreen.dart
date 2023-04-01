@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 
 class ListWorkerScreen extends StatefulWidget {
@@ -14,11 +15,13 @@ class Employee {
   final String nameSurname;
   final String phoneNumber;
   final String overSupply;
+  final int? queNumber;
 
   Employee({
     required this.nameSurname,
     required this.phoneNumber,
     required this.overSupply,
+    this.queNumber
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +29,7 @@ class Employee {
       'NameSurname': nameSurname,
       'PhoneNumber': phoneNumber,
       'OverSupply': overSupply,
+      'QueNumber': queNumber
     };
   }
 }
@@ -57,6 +61,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
   void initState() {
     super.initState();
     _fetchData();
+    List<TextEditingController> controllers = List.generate(_dataList.length, (_) => TextEditingController());
   }
 
   void _fetchData() async {
@@ -108,16 +113,14 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
     final databaseRef = FirebaseDatabase.instance
         .reference()
         .child('${currentUser?.uid}/isegelenlertbl$dateString');
-    int i = 0;
     for (final data in _dataList) {
-      if (controllers[i].text != '') {
+      if (controllers[_dataList.indexOf(data)].text != '') {
         databaseRef.child(data.nameSurname).set({
           'nameSurname': data.nameSurname,
           'overSupply': data.overSupply,
-          'queNumber': controllers[i].text,
+          'queNumber': controllers[_dataList.indexOf(data)].text
         });
       }
-      i++;
     }
   }
 
@@ -131,7 +134,11 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFCB2B93), Color(0xFF9546C4), Color(0xFF5E61F4)],
+            colors: [
+              Color(0xFFCB2B93),
+              Color(0xFF9546C4),
+              Color(0xFF5E61F4)
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -153,12 +160,31 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
             ),
             Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(
+                              () {}); // Yeniden render için setState() çağırılıyor
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'İşçi Adı Ara',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
                           columns: const [
                             DataColumn(
                               label: Text('İşe Geldi Mi?'),
@@ -177,33 +203,58 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                               tooltip: 'OverSupply',
                             ),
                           ],
-                          rows: _dataList
-                              .asMap()
-                              .map((index, data) => MapEntry(
-                                    index,
-                                    DataRow(
-                                      cells: [
-                                        DataCell(
-                                          SizedBox(
-                                            width: 100,
-                                            child: TextField(
-                                              controller: controllers[index],
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              decoration: const InputDecoration(
-                                                hintText: 'Sıra',
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(Text(data.nameSurname)),
-                                        DataCell(Text(data.phoneNumber)),
-                                        DataCell(Text(data.overSupply)),
-                                      ],
+                          rows: _searchController.text.isEmpty
+                              ? _dataList
+                              .map(
+                                (data) => DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: 100,
+                                    child: TextField(
+                                      controller: controllers[_dataList.indexOf(data)],
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: 'Sıra',
+                                      ),
                                     ),
-                                  ))
-                              .values
-                              .toList()),
+                                  ),
+                                ),
+                                DataCell(Text(data.nameSurname)),
+                                DataCell(Text(data.phoneNumber)),
+                                DataCell(Text(data.overSupply))
+                              ],
+                            ),
+                          )
+                              .toList()
+                              : _dataList
+                              .where((data) => data.nameSurname
+                              .toLowerCase()
+                              .contains(_searchController.text))
+                              .map(
+                                (data) => DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: 100,
+                                    child: TextField(
+                                      controller: controllers[_dataList.indexOf(data)],
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: 'Sıra',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(Text(data.nameSurname)),
+                                DataCell(Text(data.phoneNumber)),
+                                DataCell(Text(data.overSupply)),
+                              ],
+                            ),
+                          )
+                              .toList(),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -218,4 +269,5 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       ),
     );
   }
+
 }
