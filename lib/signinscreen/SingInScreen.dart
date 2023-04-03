@@ -52,13 +52,23 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 signInSignUpButton(context, true, () {
-                  FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: _emailTextController.text,
-                      password: _passwordTextController.text).then((value){
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => GridMenu()));
-                  } );
-
+                  if(FirebaseAuth.instance.currentUser!.emailVerified){
+                    FirebaseAuth.instance.signInWithEmailAndPassword(
+                        email: _emailTextController.text,
+                        password: _passwordTextController.text).then((value){
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => GridMenu()));
+                    } );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Giriş Başarılı.")),
+                    );
+                  }
+                  else
+                    {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Lütfen Mail Adresinizden Hesabınızı Doğrulayın!")),
+                      );
+                    }
                 }),
                 signUpOption()
               ],

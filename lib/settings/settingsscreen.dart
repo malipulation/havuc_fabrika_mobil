@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/settings/addcategoryscreen.dart';
+import 'package:havuc_fabrika_mobil/settings/addcategoryscreen/addcategoryscreen.dart';
+import 'package:havuc_fabrika_mobil/settings/deletecategoryscreen/DeleteCategoryScreen.dart';
+import 'package:havuc_fabrika_mobil/settings/listcategoryscreen/ListCategoryScreen.dart';
+import 'package:havuc_fabrika_mobil/settings/updatecategoryscreen/UpdateCategoryScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -109,6 +112,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             print('Error: $e');
                           }
                         }
+                        else
+                          {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Mevcut Yevmiye Boş Girilemez!')),
+                            );
+                          }
                       },
 
                       style: ElevatedButton.styleFrom(
@@ -132,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: ()  {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AddCategoryScreen()),
+                          MaterialPageRoute(builder: (context) => DeleteCategoryScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -144,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: ()  {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AddCategoryScreen()),
+                          MaterialPageRoute(builder: (context) => ListCategoryScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -156,13 +165,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: ()  {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AddCategoryScreen()),
+                          MaterialPageRoute(builder: (context) => UpdateCategoryScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                       ),
-                      child: const Text('Kategori Ekle'),
+                      child: const Text('Kategori Düzenle'),
                     ),
 
                     SizedBox(

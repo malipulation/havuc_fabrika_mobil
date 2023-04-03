@@ -62,6 +62,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
     super.initState();
     _fetchData();
     List<TextEditingController> controllers = List.generate(_dataList.length, (_) => TextEditingController());
+
   }
 
   void _fetchData() async {

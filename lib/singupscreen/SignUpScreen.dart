@@ -68,10 +68,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           email: _emailTextController.text,
                           password: _passwordTextController.text)
                       .then((value) {
-                    FirebaseAuth.instance.currentUser?.updateProfile(
-                        displayName: _nameSurnameTextController.text
+                    FirebaseAuth.instance.currentUser?.sendEmailVerification();
+
+                    FirebaseAuth.instance.currentUser!.updateDisplayName(_nameSurnameTextController.text);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Hesap Oluşturuldu E-Postanıza Doğrulama Mesajı Yollanmıştır.(Spam Klasörünü Kontrol Ediniz)")),
                     );
-                        print("Hesap Oluşturuldu");
                     Navigator.push(
                         context,
                         MaterialPageRoute(

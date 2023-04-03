@@ -1,29 +1,108 @@
-import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/settings/addcategoryscreen.dart';
-import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 
-class AddCategoryScreen extends StatefulWidget {
-  const AddCategoryScreen({Key? key}) : super(key: key);
+class UpdateCategoryScreen extends StatefulWidget {
+  const UpdateCategoryScreen({Key? key}) : super(key: key);
 
   @override
-  State<AddCategoryScreen> createState() => _AddCategoryScreenState();
+  State<UpdateCategoryScreen> createState() => _UpdateCategoryScreenState();
+}
+class Category {
+  final String categoryName;
+  final String kilogram;
+  final String outagePercent;
+  final String wageCount;
+
+  Category({
+    required this.categoryName,
+    required this.kilogram,
+    required this.outagePercent,
+    required this.wageCount
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'CategoryName': categoryName,
+      'Kilogram': kilogram,
+      'OutagePercent': outagePercent,
+      'WageCount': wageCount
+    };
+  }
 }
 
-class _AddCategoryScreenState extends State<AddCategoryScreen> {
-  @override
+class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
   final _categoryname = TextEditingController();
   final _outagepercent = TextEditingController();
   final _kilogram = TextEditingController();
   final _wagecount = TextEditingController();
   final _user = FirebaseAuth.instance.currentUser;
+  String? _selectedCategory;
+  List<Category> _dataList = [];
+  final _searchController =
+  TextEditingController(); // Textfield için controller
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Controller'ın bellekten atılması
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void fillTextFields(String categoryName)
+  {
+    _dataList.forEach((category) {
+      if (category.categoryName == categoryName) {
+        _kilogram.text = category.kilogram;
+        _outagepercent.text = category.outagePercent;
+        _wagecount.text = category.wageCount;
+      }
+    });
+  }
+
+  void _fetchData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final dataSnapshot = await FirebaseDatabase.instance
+            .reference()
+            .child(user.uid)
+            .child('kategoritbl')
+            .once();
+
+        final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+
+        final categoryList = dataMap.entries.map((entry) {
+          final id = entry.key;
+          final data = entry.value as Map<dynamic, dynamic>;
+          return Category(
+              categoryName: data['CategoryName'].toString(),
+              wageCount: data['WageCount'].toString(),
+              outagePercent: data['OutagePercent'].toString(),
+              kilogram: data['Kilogram'].toString()
+          );
+        }).toList();
+        setState(() {
+          _dataList = categoryList;
+        });
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text('Kategori Ekleme Ekranı'),
+        title: const Text('Kategori Düzenleme Ekranı'),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -59,7 +138,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
 
                   children: [
                     SizedBox(
-                      height: MediaQuery.of(context).size.height*0.33,
+                      height: MediaQuery.of(context).size.height*0.25,
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.80,
@@ -70,20 +149,27 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: TextFormField(
-                          controller: _categoryname,
+                        child: DropdownButtonFormField(
+                          value: _selectedCategory,
+                          items: _dataList.map((data) {
+                            return DropdownMenuItem(
+                              value: data.categoryName,
+                              child: Text(data.categoryName),
+                            );
+                          }).toList(),
                           decoration: const InputDecoration(
-                            labelText: 'Kategori Adını Giriniz',
+                            labelText: 'Kategori Seçin',
                             labelStyle: TextStyle(
                               color: Colors.black45,
                               fontWeight: FontWeight.w400,
                             ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.only(left: 20, top: 7),
                           ),
-                          style: const TextStyle(color: Colors.black),
-                          textAlign: TextAlign.left,
-                          textAlignVertical: TextAlignVertical.center,
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedCategory = newValue;
+                              fillTextFields(_selectedCategory.toString());
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -171,20 +257,19 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () async {
-                        String categoryname = _categoryname.text;
                         String outagepercent = _outagepercent.text;
                         String kilogram = _kilogram.text;
                         String wagecount = _wagecount.text;
 
-                        if (categoryname.isNotEmpty && outagepercent.isNotEmpty && wagecount.isNotEmpty && kilogram.isNotEmpty)  {
+                        if (_selectedCategory!=null && outagepercent.isNotEmpty && wagecount.isNotEmpty && kilogram.isNotEmpty)  {
                           try {
                             final databaseReference = FirebaseDatabase.instance.reference();
                             await databaseReference
                                 .child(_user?.uid ?? '')
                                 .child('kategoritbl')
-                                .child(categoryname)
+                                .child(_selectedCategory.toString())
                                 .set({
-                              'CategoryName': categoryname,
+                              'CategoryName': _selectedCategory.toString(),
                               'Id': UniqueKey().toString(),
                               'OutagePercent': outagepercent,
                               'Kilogram': kilogram,
@@ -192,22 +277,44 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Kategori Eklendi.')),
+                              const SnackBar(content: Text('Kategori Güncellendi!')),
                             );
-                            _categoryname.text="";
-                            _outagepercent.text="";
-                            _wagecount.text="";
-                            _kilogram.text="";
-
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (BuildContext context) => UpdateCategoryScreen()),
+                            );
                           } catch (e) {
                             print('Error: $e');
                           }
                         }
+                        else{
+                          if(_selectedCategory ==null)
+                          {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kategori Adı Boş Girilemez!.')),
+                            );
+                          }else if(!outagepercent.isNotEmpty)
+                          {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kategori Adı Boş Girilemez!.')),
+                            );
+                          }else if(!wagecount.isNotEmpty)
+                          {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kategori Adı Boş Girilemez!.')),
+                            );
+                          }else
+                          {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kategori Adı Boş Girilemez!.')),
+                            );
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.lightGreen,
+                        backgroundColor: Colors.red,
                       ),
-                      child: const Text('Kaydet'),
+                      child: const Text('Güncelle'),
                     ),
 
                     SizedBox(
