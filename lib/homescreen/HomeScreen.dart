@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/addworkerscreen/addworkerscreen.dart';
+import 'package:havuc_fabrika_mobil/companies/Companies.dart';
+import 'package:havuc_fabrika_mobil/expensescreen/ExpenseScreen.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
 import 'package:havuc_fabrika_mobil/settings/settingsscreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
@@ -95,6 +97,7 @@ class _GridMenuState extends State<GridMenu> {
             ListTile(
               title: const Text('Detaylı Gider Listesi'),
               onTap: () {
+
               },
             ),
             ListTile(
@@ -110,6 +113,10 @@ class _GridMenuState extends State<GridMenu> {
             ListTile(
               title: const Text('Şirketler'),
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Companies()),
+                );
               },
             ),
             ListTile(
@@ -183,6 +190,12 @@ InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
+        );
+      }
+      else if (title == 'Giderler') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ExpenseScreen()),
         );
       }
     },

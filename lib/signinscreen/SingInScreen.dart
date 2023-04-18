@@ -52,7 +52,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 signInSignUpButton(context, true, () {
-                  if(FirebaseAuth.instance.currentUser!.emailVerified){
+                  //if(FirebaseAuth.instance.currentUser!.emailVerified){
                     FirebaseAuth.instance.signInWithEmailAndPassword(
                         email: _emailTextController.text,
                         password: _passwordTextController.text).then((value){
@@ -62,13 +62,13 @@ class _SignInScreenState extends State<SignInScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Giriş Başarılı.")),
                     );
-                  }
-                  else
+                  //}
+                  /*else
                     {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Lütfen Mail Adresinizden Hesabınızı Doğrulayın!")),
                       );
-                    }
+                    }*/
                 }),
                 signUpOption()
               ],
