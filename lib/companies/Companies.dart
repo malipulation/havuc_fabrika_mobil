@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Companies extends StatefulWidget {
@@ -39,6 +40,7 @@ extension IterableExtension<E> on Iterable<E> {
 
 class _CompaniesState extends State<Companies> {
   final _logoPath = 'assets/images/logo-no-background.png';
+  final _user = FirebaseAuth.instance.currentUser;
   List<TextEditingController> controllers = [];
 
   List<Company> _dataList = [];
@@ -58,6 +60,95 @@ class _CompaniesState extends State<Companies> {
     _fetchData();
     List<TextEditingController> controllers =
         List.generate(_dataList.length, (_) => TextEditingController());
+  }
+
+  Future<void> TakePayment(String CompanyName, String PaymentAmount) async {
+    if (PaymentAmount.isNotEmpty && int.tryParse(PaymentAmount) != null) {
+      Company data = _dataList
+          .where((element) => element.companyName == CompanyName)
+          .first;
+      int Payment = int.parse(PaymentAmount);
+      final databaseReference = FirebaseDatabase.instance.reference();
+      await databaseReference
+          .child(_user?.uid ?? '')
+          .child('sirkettbl')
+          .child(CompanyName)
+          .set({
+        'CompanyName': data.companyName,
+        'Dept': int.parse(data.Debt) >= Payment
+            ? (int.parse(data.Debt) - Payment).toString()
+            : "0",
+        'Received': int.parse(data.Debt) >= Payment
+            ? data.Received
+            : (int.parse(data.Received) + Payment - int.parse(data.Debt))
+                .toString()
+      });
+      if (CompanyName != null && PaymentAmount!=null)  {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$CompanyName Şirketinden $PaymentAmount TL Ödeme Alınmıştır.')),
+        );
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+      );
+    }
+    else{
+      if(PaymentAmount.isEmpty)
+        {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Alınan Ödeme Boş Girilemez!'),backgroundColor: Colors.red),
+          );
+        }
+      else
+      {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Alınan Ödemeye Geçerli Bir Sayı Giriniz!'),backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> MakePayment(String CompanyName, String PaymentAmount) async {
+    if (PaymentAmount.isNotEmpty && int.tryParse(PaymentAmount) != null) {
+      Company data = _dataList
+          .where((element) => element.companyName == CompanyName)
+          .first;
+      int Payment = int.parse(PaymentAmount);
+      final databaseReference = FirebaseDatabase.instance.reference();
+      await databaseReference
+          .child(_user?.uid ?? '')
+          .child('sirkettbl')
+          .child(CompanyName)
+          .set({
+        'CompanyName': data.companyName,
+        'Dept': int.parse(data.Received)>=Payment ? data.Debt : (int.parse(data.Debt)+Payment-int.parse(data.Received)).toString(),
+        'Received': int.parse(data.Received)>=Payment ? (int.parse(data.Received)-Payment).toString() : "0"
+      });
+      if (CompanyName != null && PaymentAmount!=null)  {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$CompanyName Şirketine $PaymentAmount TL Ödeme Yapılmıştır.')),
+        );
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+      );
+    }
+    else{
+      if(PaymentAmount.isEmpty)
+      {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Yapılan Ödeme Boş Girilemez!'),backgroundColor: Colors.red),
+        );
+      }
+      else
+      {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Yapılan Ödemeye Geçerli Bir Sayı Giriniz!'),backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   void _fetchData() async {
@@ -103,6 +194,10 @@ class _CompaniesState extends State<Companies> {
 
   @override
   Widget build(BuildContext context) {
+    final _amount = TextEditingController();
+    final _companyName = TextEditingController();
+    final _debt = TextEditingController();
+    final _received = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
@@ -158,6 +253,7 @@ class _CompaniesState extends State<Companies> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
+                          dataRowHeight: 60,
                           columns: const [
                             DataColumn(
                               label: Text('Ödeme Al / Ödeme Yap'),
@@ -196,17 +292,73 @@ class _CompaniesState extends State<Companies> {
                                                     showDialog(
                                                       context: context,
                                                       builder: (BuildContext
-                                                      context) {
+                                                          context) {
                                                         return AlertDialog(
-                                                          title: Text(
-                                                              'Ödeme Al'),
+                                                          title:
+                                                              Text('Ödeme Al'),
+                                                          content:
+                                                              TextFormField(
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            controller: _amount,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'Alınan Miktar',
+                                                              labelStyle:
+                                                                  TextStyle(
+                                                                color: Colors
+                                                                    .black45,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                              ),
+                                                              border:
+                                                                  InputBorder
+                                                                      .none,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 20,
+                                                                      top: 7),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            textAlignVertical:
+                                                                TextAlignVertical
+                                                                    .center,
+                                                          ),
                                                           actions: [
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                TakePayment(
+                                                                    data
+                                                                        .companyName,
+                                                                    _amount
+                                                                        .text);
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .lightGreen,
+                                                              ),
+                                                              child: const Text(
+                                                                  'Kaydet'),
+                                                            ),
                                                             TextButton(
                                                               child:
-                                                              Text('Kapat'),
+                                                                  Text('Kapat'),
                                                               onPressed: () {
                                                                 Navigator.of(
-                                                                    context)
+                                                                        context)
                                                                     .pop();
                                                               },
                                                             ),
@@ -230,17 +382,73 @@ class _CompaniesState extends State<Companies> {
                                                     showDialog(
                                                       context: context,
                                                       builder: (BuildContext
-                                                      context) {
+                                                          context) {
                                                         return AlertDialog(
-                                                          title: Text(
-                                                              'Ödeme Yap'),
+                                                          title:
+                                                              Text('Ödeme Yap'),
+                                                          content:
+                                                              TextFormField(
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            controller: _amount,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'Ödenen Miktar',
+                                                              labelStyle:
+                                                                  TextStyle(
+                                                                color: Colors
+                                                                    .black45,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                              ),
+                                                              border:
+                                                                  InputBorder
+                                                                      .none,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 20,
+                                                                      top: 7),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            textAlignVertical:
+                                                                TextAlignVertical
+                                                                    .center,
+                                                          ),
                                                           actions: [
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                MakePayment(
+                                                                    data
+                                                                        .companyName,
+                                                                    _amount
+                                                                        .text);
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .lightGreen,
+                                                              ),
+                                                              child: const Text(
+                                                                  'Kaydet'),
+                                                            ),
                                                             TextButton(
-                                                              child:
-                                                              Text('Kapat'),
+                                                              child: const Text(
+                                                                  'Kapat'),
                                                               onPressed: () {
                                                                 Navigator.of(
-                                                                    context)
+                                                                        context)
                                                                     .pop();
                                                               },
                                                             ),
@@ -272,7 +480,7 @@ class _CompaniesState extends State<Companies> {
                                           Row(
                                             children: [
                                               Ink(
-                                                decoration: const ShapeDecoration(
+                                                decoration: ShapeDecoration(
                                                   color: Colors.green,
                                                   shape: CircleBorder(),
                                                 ),
@@ -283,17 +491,73 @@ class _CompaniesState extends State<Companies> {
                                                     showDialog(
                                                       context: context,
                                                       builder: (BuildContext
-                                                      context) {
+                                                          context) {
                                                         return AlertDialog(
-                                                          title: Text(
-                                                              'Ödeme Al'),
+                                                          title:
+                                                              Text('Ödeme Al'),
+                                                          content:
+                                                              TextFormField(
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            controller: _amount,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'Alınan Miktar',
+                                                              labelStyle:
+                                                                  TextStyle(
+                                                                color: Colors
+                                                                    .black45,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                              ),
+                                                              border:
+                                                                  InputBorder
+                                                                      .none,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 20,
+                                                                      top: 7),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            textAlignVertical:
+                                                                TextAlignVertical
+                                                                    .center,
+                                                          ),
                                                           actions: [
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                TakePayment(
+                                                                    data
+                                                                        .companyName,
+                                                                    _amount
+                                                                        .text);
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .lightGreen,
+                                                              ),
+                                                              child: const Text(
+                                                                  'Kaydet'),
+                                                            ),
                                                             TextButton(
                                                               child:
-                                                              Text('Kapat'),
+                                                                  Text('Kapat'),
                                                               onPressed: () {
                                                                 Navigator.of(
-                                                                    context)
+                                                                        context)
                                                                     .pop();
                                                               },
                                                             ),
@@ -304,9 +568,9 @@ class _CompaniesState extends State<Companies> {
                                                   },
                                                 ),
                                               ),
-                                              const SizedBox(width: 35),
+                                              SizedBox(width: 35),
                                               Ink(
-                                                decoration: const ShapeDecoration(
+                                                decoration: ShapeDecoration(
                                                   color: Colors.redAccent,
                                                   shape: CircleBorder(),
                                                 ),
@@ -319,12 +583,68 @@ class _CompaniesState extends State<Companies> {
                                                       builder: (BuildContext
                                                           context) {
                                                         return AlertDialog(
-                                                          title: Text(
-                                                              'Ödeme Yap'),
+                                                          title:
+                                                              Text('Ödeme Yap'),
+                                                          content:
+                                                              TextFormField(
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            controller: _amount,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              labelText:
+                                                                  'Ödenen Miktar',
+                                                              labelStyle:
+                                                                  TextStyle(
+                                                                color: Colors
+                                                                    .black45,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                              ),
+                                                              border:
+                                                                  InputBorder
+                                                                      .none,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      left: 20,
+                                                                      top: 7),
+                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            textAlignVertical:
+                                                                TextAlignVertical
+                                                                    .center,
+                                                          ),
                                                           actions: [
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                MakePayment(
+                                                                    data
+                                                                        .companyName,
+                                                                    _amount
+                                                                        .text);
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .lightGreen,
+                                                              ),
+                                                              child: const Text(
+                                                                  'Kaydet'),
+                                                            ),
                                                             TextButton(
-                                                              child:
-                                                                  Text('Kapat'),
+                                                              child: const Text(
+                                                                  'Kapat'),
                                                               onPressed: () {
                                                                 Navigator.of(
                                                                         context)
@@ -354,10 +674,150 @@ class _CompaniesState extends State<Companies> {
                     ),
                   ),
                 ),
-                /*ElevatedButton(
-                    onPressed: {},
-                    child: const Text('Günü Başlat'),
-                  ),*/
+                ElevatedButton(
+                    onPressed: ()async{
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Şirket Ekle'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextFormField(
+                                  controller: _companyName,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Şirket Adı',
+                                    labelStyle: TextStyle(
+                                      color: Colors.black45,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.only(left: 20, top: 7),
+                                  ),
+                                  style: const TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.left,
+                                  textAlignVertical: TextAlignVertical.center,
+                                ),
+                                TextFormField(
+                                  keyboardType: TextInputType.number,
+                                  controller: _debt,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Borç',
+                                    labelStyle: TextStyle(
+                                      color: Colors.black45,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.only(left: 20, top: 7),
+                                  ),
+                                  style: const TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.left,
+                                  textAlignVertical: TextAlignVertical.center,
+                                ),
+                                TextFormField(
+                                  keyboardType: TextInputType.number,
+                                  controller: _received,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Alacak',
+                                    labelStyle: TextStyle(
+                                      color: Colors.black45,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.only(left: 20, top: 7),
+                                  ),
+                                  style: const TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.left,
+                                  textAlignVertical: TextAlignVertical.center,
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () async {
+                                  String companyName = _companyName.text;
+                                  String debt = _debt.text;
+                                  String received = _received.text;
+
+                                  if (companyName.isNotEmpty && debt.isNotEmpty && received.isNotEmpty && int.tryParse(debt)!=null && int.tryParse(received)!=null)  {
+                                    try {
+                                      final databaseReference = FirebaseDatabase.instance.reference();
+                                      await databaseReference
+                                          .child(_user?.uid ?? '')
+                                          .child('sirkettbl')
+                                          .child(companyName)
+                                          .set({
+                                        'CompanyName': companyName,
+                                        'Dept': int.parse(debt)>=int.parse(received) ? (int.parse(debt)-int.parse(received)).toString() : "0",
+                                        'Received': int.parse(debt)<int.parse(received) ? (int.parse(received)-int.parse(debt)).toString() : "0"
+                                      });
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Şirket Eklendi.')),
+                                      );
+                                      // ignore: use_build_context_synchronously
+                                      Navigator.pop(context,
+                                        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+                                      );
+                                      // ignore: use_build_context_synchronously
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+                                      );
+                                    } catch (e) {
+                                      print('Error: $e');
+                                    }
+                                  }
+                                  else{
+                                    if(!companyName.isNotEmpty)
+                                    {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Şirket Adı Boş Girilemez!.')),
+                                      );
+                                    }
+                                    else if(!debt.isNotEmpty)
+                                    {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Borç Miktarı Boş Girilemez!.')),
+                                      );
+                                    }
+                                    else if(!received.isNotEmpty)
+                                    {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Alacak Miktarı Boş Girilemez!.')),
+                                      );
+                                    }
+                                    else
+                                    {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Borç ve Alacak Kısmına Sadece Sayı Girebilirsiniz!.')),
+                                      );
+                                    }
+
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.lightGreen,
+                                ),
+                                child: const Text('Ekle'),
+                              ),
+                              TextButton(
+                                child: const Text('Kapat'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Şirket Ekle'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  ),
               ],
             ),
           ],

@@ -9,6 +9,45 @@ class ListCategoryScreen extends StatefulWidget {
   @override
   State<ListCategoryScreen> createState() => _ListCategoryScreenState();
 }
+class _CategoryDataSource extends DataTableSource {
+  final List<Category> _categoryList;
+  List<bool> selectedRows = [];
+
+  int _selectedRowCount = 0;
+
+  _CategoryDataSource(this._categoryList) {
+    selectedRows = List<bool>.filled(_categoryList.length, false);
+  }
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= _categoryList.length) {
+      return null;
+    }
+
+    final category = _categoryList[index];
+    return DataRow.byIndex(
+    index: index,
+      cells: [
+        DataCell(Text(category.categoryName)),
+        DataCell(Text(category.outagePercent)),
+        DataCell(Text(category.wageCount)),
+        DataCell(Text(category.kilogram)),
+      ],
+    );
+  }
+
+
+  @override
+  int get rowCount => _categoryList.length;
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => _selectedRowCount;
+}
+
 
 class Category {
   final String categoryName;
@@ -36,6 +75,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
   final _user = FirebaseAuth.instance.currentUser;
   List<Category> _dataList = [];
+  int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
 
   @override
   void dispose() {
@@ -45,10 +85,10 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+     _fetchData();
   }
 
-  void _fetchData() async {
+  Future<void> _fetchData() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
@@ -64,17 +104,37 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
           final id = entry.key;
           final data = entry.value as Map<dynamic, dynamic>;
           return Category(
-              categoryName: data['CategoryName'].toString(),
-              wageCount: data['WageCount'].toString(),
-              outagePercent: data['OutagePercent'].toString(),
-              kilogram: data['Kilogram'].toString());
+            categoryName: data['CategoryName'].toString(),
+            wageCount: data['WageCount'].toString(),
+            outagePercent: data['OutagePercent'].toString(),
+            kilogram: data['Kilogram'].toString(),
+          );
         }).toList();
+
         setState(() {
           _dataList = categoryList;
         });
       }
     } catch (error) {
       print('Error fetching data: $error');
+      // Show an error message to the user
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text('Error fetching data: $error'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -111,44 +171,41 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
             Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                            columns: const [
-                              DataColumn(
-                                label: Text('Kategori Adı'),
-                              ),
-                              DataColumn(
-                                label: Text('Fire Miktarı'),
-                              ),
-                              DataColumn(
-                                label: Text('1 Yevmiye Kaç Pakettir'),
-                              ),
-                              DataColumn(
-                                label: Text('Kilogram'),
-                              ),
-                            ],
-                            rows: _dataList
-                                .map(
-                                  (data) => DataRow(
-                                    cells: [
-                                      DataCell(Text(data.categoryName)),
-                                      DataCell(Text(data.outagePercent)),
-                                      DataCell(Text(data.wageCount)),
-                                      DataCell(Text(data.kilogram)),
-                                    ],
-                                  ),
-                                )
-                                .toList()),
+                  child: Container(
+                    color: Colors.transparent,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child:Theme(
+                          data: Theme.of(context)
+                              .copyWith(cardColor: Colors.transparent, dividerColor: Colors.green),
+                          child:
+                        PaginatedDataTable(
+                          header: const Text('Kategori Listesi'),
+                          columns: const [
+                            DataColumn(
+                              label: Text('Kategori Adı'),
+                            ),
+                            DataColumn(
+                              label: Text('Fire Miktarı'),
+                            ),
+                            DataColumn(
+                              label: Text('1 Yevmiye Kaç Pakettir'),
+                            ),
+                            DataColumn(
+                              label: Text('Kilogram'),
+                            ),
+                          ],
+                          source: _CategoryDataSource(_dataList),
+                          rowsPerPage: _dataList.length <= 10 ? _dataList.length : 10,
+                          arrowHeadColor: Colors.black45,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ],
+                )],
             ),
           ],
         ),
@@ -156,3 +213,4 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     );
   }
 }
+
