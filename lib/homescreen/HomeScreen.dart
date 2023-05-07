@@ -7,6 +7,7 @@ import 'package:havuc_fabrika_mobil/addworkerscreen/addworkerscreen.dart';
 import 'package:havuc_fabrika_mobil/companies/Companies.dart';
 import 'package:havuc_fabrika_mobil/expensescreen/ExpenseScreen.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
+import 'package:havuc_fabrika_mobil/setsales/SetSales.dart';
 import 'package:havuc_fabrika_mobil/settings/settingsscreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
@@ -196,6 +197,12 @@ InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ExpenseScreen()),
+        );
+      }
+      else if (title == 'Satış Yap') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SetSales()),
         );
       }
     },

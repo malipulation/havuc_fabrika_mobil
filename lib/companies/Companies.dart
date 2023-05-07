@@ -295,7 +295,7 @@ class _CompaniesState extends State<Companies> {
                                                           context) {
                                                         return AlertDialog(
                                                           title:
-                                                              Text('Ödeme Al'),
+                                                              Text('Ödeme Al ' + data.companyName),
                                                           content:
                                                               TextFormField(
                                                             keyboardType:
@@ -385,7 +385,7 @@ class _CompaniesState extends State<Companies> {
                                                           context) {
                                                         return AlertDialog(
                                                           title:
-                                                              Text('Ödeme Yap'),
+                                                              Text('Ödeme Yap ' + data.companyName),
                                                           content:
                                                               TextFormField(
                                                             keyboardType:
@@ -494,7 +494,7 @@ class _CompaniesState extends State<Companies> {
                                                           context) {
                                                         return AlertDialog(
                                                           title:
-                                                              Text('Ödeme Al'),
+                                                              Text('Ödeme Al '+data.companyName),
                                                           content:
                                                               TextFormField(
                                                             keyboardType:
@@ -584,7 +584,7 @@ class _CompaniesState extends State<Companies> {
                                                           context) {
                                                         return AlertDialog(
                                                           title:
-                                                              Text('Ödeme Yap'),
+                                                              Text('Ödeme Yap '+data.companyName),
                                                           content:
                                                               TextFormField(
                                                             keyboardType:
