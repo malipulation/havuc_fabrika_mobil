@@ -143,7 +143,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text('İşçi Listeleme Ekranı'),
+        title: const Text('Kategori Listeleme Ekranı'),
       ),
       body: Container(
         decoration: const BoxDecoration(

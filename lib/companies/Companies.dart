@@ -63,11 +63,11 @@ class _CompaniesState extends State<Companies> {
   }
 
   Future<void> TakePayment(String CompanyName, String PaymentAmount) async {
-    if (PaymentAmount.isNotEmpty && int.tryParse(PaymentAmount) != null) {
+    if (PaymentAmount.isNotEmpty && double.tryParse(PaymentAmount) != null) {
       Company data = _dataList
           .where((element) => element.companyName == CompanyName)
           .first;
-      int Payment = int.parse(PaymentAmount);
+      double Payment = double.parse(PaymentAmount);
       final databaseReference = FirebaseDatabase.instance.reference();
       await databaseReference
           .child(_user?.uid ?? '')
@@ -75,12 +75,12 @@ class _CompaniesState extends State<Companies> {
           .child(CompanyName)
           .set({
         'CompanyName': data.companyName,
-        'Dept': int.parse(data.Debt) >= Payment
-            ? (int.parse(data.Debt) - Payment).toString()
+        'Dept': double.parse(data.Debt) >= Payment
+            ? (double.parse(data.Debt) - Payment).toString()
             : "0",
-        'Received': int.parse(data.Debt) >= Payment
+        'Received': double.parse(data.Debt) >= Payment
             ? data.Received
-            : (int.parse(data.Received) + Payment - int.parse(data.Debt))
+            : (double.parse(data.Received) + Payment - double.parse(data.Debt))
                 .toString()
       });
       if (CompanyName != null && PaymentAmount!=null)  {
@@ -88,6 +88,9 @@ class _CompaniesState extends State<Companies> {
           SnackBar(content: Text('$CompanyName Şirketinden $PaymentAmount TL Ödeme Alınmıştır.')),
         );
       }
+      Navigator.pop(context,
+        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (BuildContext context) => Companies()),
@@ -110,11 +113,11 @@ class _CompaniesState extends State<Companies> {
   }
 
   Future<void> MakePayment(String CompanyName, String PaymentAmount) async {
-    if (PaymentAmount.isNotEmpty && int.tryParse(PaymentAmount) != null) {
+    if (PaymentAmount.isNotEmpty && double.tryParse(PaymentAmount) != null) {
       Company data = _dataList
           .where((element) => element.companyName == CompanyName)
           .first;
-      int Payment = int.parse(PaymentAmount);
+      double Payment = double.parse(PaymentAmount);
       final databaseReference = FirebaseDatabase.instance.reference();
       await databaseReference
           .child(_user?.uid ?? '')
@@ -122,14 +125,17 @@ class _CompaniesState extends State<Companies> {
           .child(CompanyName)
           .set({
         'CompanyName': data.companyName,
-        'Dept': int.parse(data.Received)>=Payment ? data.Debt : (int.parse(data.Debt)+Payment-int.parse(data.Received)).toString(),
-        'Received': int.parse(data.Received)>=Payment ? (int.parse(data.Received)-Payment).toString() : "0"
+        'Dept': double.parse(data.Received)>=Payment ? data.Debt : (double.parse(data.Debt)+Payment-double.parse(data.Received)).toString(),
+        'Received': double.parse(data.Received)>=Payment ? (double.parse(data.Received)-Payment).toString() : "0"
       });
       if (CompanyName != null && PaymentAmount!=null)  {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('$CompanyName Şirketine $PaymentAmount TL Ödeme Yapılmıştır.')),
         );
       }
+      Navigator.pop(context,
+        MaterialPageRoute(builder: (BuildContext context) => Companies()),
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (BuildContext context) => Companies()),
