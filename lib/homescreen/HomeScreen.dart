@@ -5,11 +5,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/addworkerscreen/addworkerscreen.dart';
 import 'package:havuc_fabrika_mobil/companies/Companies.dart';
+import 'package:havuc_fabrika_mobil/expenselistscreen/ExpenseListScreen.dart';
 import 'package:havuc_fabrika_mobil/expensescreen/ExpenseScreen.dart';
 import 'package:havuc_fabrika_mobil/profilescreen/ProfileScreen.dart';
+import 'package:havuc_fabrika_mobil/salelistscreen/SaleListScreen.dart';
 import 'package:havuc_fabrika_mobil/setsales/SetSales.dart';
 import 'package:havuc_fabrika_mobil/settings/settingsscreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
+import 'package:havuc_fabrika_mobil/updatepackage/UpdatePackageScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import '../listworkerscreen/ListWorkerScreen.dart';
 import '../reusable_widgets/ReusableWidget.dart';
@@ -98,12 +101,19 @@ class _GridMenuState extends State<GridMenu> {
             ListTile(
               title: const Text('Detaylı Gider Listesi'),
               onTap: () {
-
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+                );
               },
             ),
             ListTile(
               title: const Text('Detaylı Satış Listesi'),
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SaleListScreen()),
+                );
               },
             ),
             ListTile(
@@ -203,6 +213,11 @@ InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SetSales()),
+        );
+      }else if (title == 'Paket Güncelle') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const UpdatePackageScreen()),
         );
       }
     },

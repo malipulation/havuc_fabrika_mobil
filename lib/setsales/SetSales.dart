@@ -384,6 +384,7 @@ class _SetSalesState extends State<SetSales> {
                                     'SalePrice': _salesprice.text,
                                     'SalesAmount': (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString() ,
                                     'WhatIs': _selectedCategory,
+                                    'Description': _description.text
                                   });
                                   String Companyname = _companyname.text;
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -423,6 +424,7 @@ class _SetSalesState extends State<SetSales> {
                                     'SalePrice': _salesprice.text,
                                     'SalesAmount': (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString() ,
                                     'WhatIs': _selectedCategory,
+                                    'Description': _description.text
                                   });
 
                                   final databaseReference1 =

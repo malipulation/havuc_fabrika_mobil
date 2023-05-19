@@ -3,11 +3,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 
-class ListCategoryScreen extends StatefulWidget {
-  const ListCategoryScreen({Key? key}) : super(key: key);
+class SaleListScreen extends StatefulWidget {
+  const SaleListScreen({Key? key}) : super(key: key);
 
   @override
-  State<ListCategoryScreen> createState() => _ListCategoryScreenState();
+  State<SaleListScreen> createState() => _SaleListScreenState();
 }
 class _CategoryDataSource extends DataTableSource {
   final List<Category> _categoryList;
@@ -27,12 +27,14 @@ class _CategoryDataSource extends DataTableSource {
 
     final category = _categoryList[index];
     return DataRow.byIndex(
-    index: index,
+      index: index,
       cells: [
-        DataCell(Text(category.categoryName)),
-        DataCell(Text(category.outagePercent)),
-        DataCell(Text(category.wageCount)),
-        DataCell(Text(category.kilogram)),
+        DataCell(Text(category.companyName)),
+        DataCell(Text(category.salesAmount)),
+        DataCell(Text(category.salePrice)),
+        DataCell(Text(category.desription)),
+        DataCell(Text(category.whatIs)),
+        DataCell(Text(category.date)),
       ],
     );
   }
@@ -50,32 +52,41 @@ class _CategoryDataSource extends DataTableSource {
 
 
 class Category {
-  final String categoryName;
-  final String kilogram;
-  final String outagePercent;
-  final String wageCount;
+  final String companyName;
+  final String date;
+  final String desription;
+  final String salePrice;
+  final String salesAmount;
+  final String whatIs;
 
   Category(
-      {required this.categoryName,
-      required this.kilogram,
-      required this.outagePercent,
-      required this.wageCount});
+      {required this.companyName,
+        required this.date,
+        required this.desription,
+        required this.whatIs,
+        required this.salesAmount,
+        required this.salePrice
+      });
 
   Map<String, dynamic> toMap() {
     return {
-      'CategoryName': categoryName,
-      'Kilogram': kilogram,
-      'OutagePercent': outagePercent,
-      'WageCount': wageCount
+      'CompanyName': companyName,
+      'SalesAmount': salesAmount,
+      'SalePrice': salePrice,
+      'Description': desription,
+      'Date': date,
+      'WhatIs': whatIs
     };
   }
 }
 
-class _ListCategoryScreenState extends State<ListCategoryScreen> {
+class _SaleListScreenState extends State<SaleListScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
   final _user = FirebaseAuth.instance.currentUser;
   List<Category> _dataList = [];
+  _CategoryDataSource _dataSource = _CategoryDataSource([]);
   int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+
 
   @override
   void dispose() {
@@ -85,7 +96,16 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
   @override
   void initState() {
     super.initState();
-     _fetchData();
+    _fetchData();
+  }
+  void _filterTable(String keyword) {
+    List<Category> filteredList = _dataList.where((category) {
+      return category.companyName.toLowerCase().contains(keyword.toLowerCase());
+    }).toList();
+
+    setState(() {
+      _dataSource = _CategoryDataSource(filteredList);
+    });
   }
 
   Future<void> _fetchData() async {
@@ -95,7 +115,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
         final dataSnapshot = await FirebaseDatabase.instance
             .reference()
             .child(user.uid)
-            .child('kategoritbl')
+            .child('satistbl')
             .once();
 
         final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
@@ -104,15 +124,18 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
           final id = entry.key;
           final data = entry.value as Map<dynamic, dynamic>;
           return Category(
-            categoryName: data['CategoryName'].toString(),
-            wageCount: data['WageCount'].toString(),
-            outagePercent: data['OutagePercent'].toString(),
-            kilogram: data['Kilogram'].toString(),
+            companyName: data['CompanyName'].toString(),
+            whatIs: data['WhatIs'].toString(),
+            desription: data['Description'].toString(),
+            salePrice: data['SalePrice'].toString(),
+            salesAmount: data['SalesAmount'].toString(),
+            date: data['Date'].toString().substring(0, data['Date'].toString().length - 10),
           );
         }).toList();
 
         setState(() {
           _dataList = categoryList;
+          _dataSource = _CategoryDataSource(_dataList);
         });
       }
     } catch (error) {
@@ -143,7 +166,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text('Kategori Listeleme Ekranı'),
+        title: const Text('Satış Listeleme Ekranı'),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -168,8 +191,19 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
                 ),
               ),
             ),
+
             Column(
               children: [
+                TextField(
+                  onChanged: (value) {
+                    _filterTable(value);
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Satış Ara',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                ),
+                SizedBox(height: 10),
                 Expanded(
                   child: Container(
                     color: Colors.transparent,
@@ -181,30 +215,36 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
                           data: Theme.of(context)
                               .copyWith(cardColor: Colors.transparent, dividerColor: Colors.green),
                           child:
-                        PaginatedDataTable(
-                          header: const Text('Kategori Listesi'),
-                          columns: const [
-                            DataColumn(
-                              label: Text('Kategori Adı'),
-                            ),
-                            DataColumn(
-                              label: Text('Fire Miktarı'),
-                            ),
-                            DataColumn(
-                              label: Text('1 Yevmiye Kaç Pakettir'),
-                            ),
-                            DataColumn(
-                              label: Text('Kilogram'),
-                            ),
-                          ],
-                          source: _CategoryDataSource(_dataList),
-                          rowsPerPage: 5,
-                          arrowHeadColor: Colors.black45,
+                          PaginatedDataTable(
+                            header: const Text('Detaylı Satış Listesi'),
+                            columns: const [
+                              DataColumn(
+                                label: Text('Satış Kime Yapıldı'),
+                              ),
+                              DataColumn(
+                                label: Text('Satış Miktarı')
+                              ),
+                              DataColumn(
+                                label: Text('Satış Fiyatı'),
+                              ),
+                              DataColumn(
+                                label: Text('Açıklama'),
+                              ),
+                              DataColumn(
+                                label: Text('Satılan Kategori'),
+                              ),
+                              DataColumn(
+                                label: Text('Tarih'),
+                              ),
+                            ],
+                            source: _dataSource,
+                            rowsPerPage: 8,
+                            arrowHeadColor: Colors.black45,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 )],
             ),
           ],

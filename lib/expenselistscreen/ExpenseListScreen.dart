@@ -3,11 +3,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 
-class ListCategoryScreen extends StatefulWidget {
-  const ListCategoryScreen({Key? key}) : super(key: key);
+class ExpenseListScreen extends StatefulWidget {
+  const ExpenseListScreen({Key? key}) : super(key: key);
 
   @override
-  State<ListCategoryScreen> createState() => _ListCategoryScreenState();
+  State<ExpenseListScreen> createState() => _ExpenseListScreenState();
 }
 class _CategoryDataSource extends DataTableSource {
   final List<Category> _categoryList;
@@ -30,13 +30,12 @@ class _CategoryDataSource extends DataTableSource {
     index: index,
       cells: [
         DataCell(Text(category.categoryName)),
-        DataCell(Text(category.outagePercent)),
         DataCell(Text(category.wageCount)),
+        DataCell(Text(category.outagePercent)),
         DataCell(Text(category.kilogram)),
       ],
     );
   }
-
 
   @override
   int get rowCount => _categoryList.length;
@@ -63,19 +62,21 @@ class Category {
 
   Map<String, dynamic> toMap() {
     return {
-      'CategoryName': categoryName,
-      'Kilogram': kilogram,
-      'OutagePercent': outagePercent,
-      'WageCount': wageCount
+      'WhoWasExpense': categoryName,
+      'ExpenseAmount': kilogram,
+      'Description': outagePercent,
+      'Date': wageCount
     };
   }
 }
 
-class _ListCategoryScreenState extends State<ListCategoryScreen> {
+class _ExpenseListScreenState extends State<ExpenseListScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
   final _user = FirebaseAuth.instance.currentUser;
   List<Category> _dataList = [];
+  _CategoryDataSource _dataSource = _CategoryDataSource([]);
   int _rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
+
 
   @override
   void dispose() {
@@ -87,6 +88,15 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     super.initState();
      _fetchData();
   }
+  void _filterTable(String keyword) {
+    List<Category> filteredList = _dataList.where((category) {
+      return category.categoryName.toLowerCase().contains(keyword.toLowerCase());
+    }).toList();
+
+    setState(() {
+      _dataSource = _CategoryDataSource(filteredList);
+    });
+  }
 
   Future<void> _fetchData() async {
     try {
@@ -95,7 +105,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
         final dataSnapshot = await FirebaseDatabase.instance
             .reference()
             .child(user.uid)
-            .child('kategoritbl')
+            .child('odemelertbl')
             .once();
 
         final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
@@ -104,15 +114,16 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
           final id = entry.key;
           final data = entry.value as Map<dynamic, dynamic>;
           return Category(
-            categoryName: data['CategoryName'].toString(),
-            wageCount: data['WageCount'].toString(),
-            outagePercent: data['OutagePercent'].toString(),
-            kilogram: data['Kilogram'].toString(),
+            categoryName: data['WhoWasExpense'].toString(),
+            wageCount: data['ExpenseAmount'].toString(),
+            outagePercent: data['Description'].toString(),
+            kilogram: data['Date'].toString().substring(0, data['Date'].toString().length - 10),
           );
         }).toList();
 
         setState(() {
           _dataList = categoryList;
+          _dataSource = _CategoryDataSource(_dataList);
         });
       }
     } catch (error) {
@@ -143,7 +154,7 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text('Kategori Listeleme Ekranı'),
+        title: const Text('Gider Listeleme Ekranı'),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -168,8 +179,19 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
                 ),
               ),
             ),
+
             Column(
               children: [
+                TextField(
+                    onChanged: (value) {
+                      _filterTable(value);
+                    },
+                  decoration: InputDecoration(
+                    labelText: 'Gider Ara',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                ),
+                SizedBox(height: 10),
                 Expanded(
                   child: Container(
                     color: Colors.transparent,
@@ -182,23 +204,23 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
                               .copyWith(cardColor: Colors.transparent, dividerColor: Colors.green),
                           child:
                         PaginatedDataTable(
-                          header: const Text('Kategori Listesi'),
+                          header: const Text('Detaylı Gider Listesi'),
                           columns: const [
                             DataColumn(
-                              label: Text('Kategori Adı'),
+                              label: Text('Ödeme Kime Yapıldı'),
                             ),
                             DataColumn(
-                              label: Text('Fire Miktarı'),
+                              label: Text('Ödeme Tutarı'),
                             ),
                             DataColumn(
-                              label: Text('1 Yevmiye Kaç Pakettir'),
+                              label: Text('Açıklama'),
                             ),
                             DataColumn(
-                              label: Text('Kilogram'),
+                              label: Text('Tarih'),
                             ),
                           ],
-                          source: _CategoryDataSource(_dataList),
-                          rowsPerPage: 5,
+                          source: _dataSource,
+                          rowsPerPage: 8,
                           arrowHeadColor: Colors.black45,
                         ),
                       ),

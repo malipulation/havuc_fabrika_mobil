@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "1032677290094",
-    "firebase_url": "https://havuc-fabrika-default-rtdb.firebaseio.com",
-    "project_id": "havuc-fabrika",
-    "storage_bucket": "havuc-fabrika.appspot.com"
+    "project_number": "987021140749",
+    "firebase_url": "https://mhpro-ecdf7-default-rtdb.firebaseio.com",
+    "project_id": "mhpro-ecdf7",
+    "storage_bucket": "mhpro-ecdf7.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1032677290094:android:83b8e18314209fdfd0767f",
+        "mobilesdk_app_id": "1:987021140749:android:e2dcb20cb3ae1540204644",
         "android_client_info": {
           "package_name": "com.example.havuc_fabrika_mobil"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1032677290094-rrtku0mco0ihlc608ihq9grg5m9gbj2v.apps.googleusercontent.com",
+          "client_id": "987021140749-e69g9242gugjmvscc7o4rsk75ib6ru13.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB8_Gh2s4yW48dYIp5-NLGKxK7sLPXlL7g"
+          "current_key": "AIzaSyDQDNRxqzroU6aeb8I6Ayv6ZoMgGTQz2UE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1032677290094-rrtku0mco0ihlc608ihq9grg5m9gbj2v.apps.googleusercontent.com",
+              "client_id": "987021140749-e69g9242gugjmvscc7o4rsk75ib6ru13.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class ListWorkerScreen extends StatefulWidget {
   const ListWorkerScreen({Key? key}) : super(key: key);
@@ -17,12 +18,11 @@ class Employee {
   final String overSupply;
   final int? queNumber;
 
-  Employee({
-    required this.nameSurname,
-    required this.phoneNumber,
-    required this.overSupply,
-    this.queNumber
-  });
+  Employee(
+      {required this.nameSurname,
+      required this.phoneNumber,
+      required this.overSupply,
+      this.queNumber});
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,6 +34,22 @@ class Employee {
   }
 }
 
+class Category {
+  final String categoryName;
+  final String wageCount;
+  bool isChecked;
+
+  Category({
+    required this.categoryName,
+    required this.wageCount,
+    this.isChecked = false, // Varsayılan değeri false olarak ayarlayın
+  });
+
+  Map<String, dynamic> toMap() {
+    return {'CategoryName': categoryName, 'WageCount': wageCount};
+  }
+}
+
 extension IterableExtension<E> on Iterable<E> {
   Map<int, E> asMap() {
     var index = 0;
@@ -41,6 +57,7 @@ extension IterableExtension<E> on Iterable<E> {
         key: (item) => index++, value: (item) => item);
   }
 }
+List<Category> _dataListCategory = [];
 
 class _ListWorkerScreenState extends State<ListWorkerScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
@@ -61,8 +78,8 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
   void initState() {
     super.initState();
     _fetchData();
-    List<TextEditingController> controllers = List.generate(_dataList.length, (_) => TextEditingController());
-
+    List<TextEditingController> controllers =
+        List.generate(_dataList.length, (_) => TextEditingController());
   }
 
   void _fetchData() async {
@@ -74,8 +91,13 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
             .child(user.uid)
             .child('iscilertbl')
             .once();
-
+        final dataSnapshot2 = await FirebaseDatabase.instance
+            .reference()
+            .child(user.uid)
+            .child('kategoritbl')
+            .once();
         final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+        final dataMap2 = dataSnapshot2.snapshot.value as Map<dynamic, dynamic>;
 
         final employeeList = dataMap.entries.map((entry) {
           final id = entry.key;
@@ -86,9 +108,18 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
             overSupply: data['OverSupply'].toString(),
           );
         }).toList();
+        final categoryList = dataMap2.entries.map((entry) {
+          final id = entry.key;
+          final data = entry.value as Map<dynamic, dynamic>;
+          return Category(
+            categoryName: data['CategoryName'],
+            wageCount: data['WageCount'],
+          );
+        }).toList();
 
         setState(() {
           _dataList = employeeList;
+          _dataListCategory = categoryList;
           controllers =
               List.generate(_dataList.length, (_) => TextEditingController());
         });
@@ -106,23 +137,61 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
     }).toList();
   }
 
-  void _saveDataToFirebase() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final now = DateTime.now();
-    final dateFormat = DateFormat('dd-MM-yyyy');
-    final dateString = dateFormat.format(now);
-    final databaseRef = FirebaseDatabase.instance
-        .reference()
-        .child('${currentUser?.uid}/isegelenlertbl$dateString');
-    for (final data in _dataList) {
-      if (controllers[_dataList.indexOf(data)].text != '') {
-        databaseRef.child(data.nameSurname).set({
-          'nameSurname': data.nameSurname,
-          'overSupply': data.overSupply,
-          'queNumber': controllers[_dataList.indexOf(data)].text
-        });
+  Future<void> _saveDataToFirebase() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final now = DateTime.now();
+      final dateFormat = DateFormat('dd-MM-yyyy');
+      final dateString = dateFormat.format(now);
+      final dataSnapshot = await FirebaseDatabase.instance
+          .reference()
+          .child('${user.uid}/günlükKategori$dateString')
+          .once();
+      if(dataSnapshot.snapshot.value==null){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen Önce Kategori Seçiniz.')),
+        );
+        return;
       }
-    }
+      else{
+        final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+        final categoryList = dataMap.entries.map((entry) {
+          final id = entry.key;
+          final data = entry.value as Map<dynamic, dynamic>;
+          return Category(
+            categoryName: data['CategoryName'],
+            wageCount: data['WageCount'],
+          );
+        }).toList();
+        final currentUser = FirebaseAuth.instance.currentUser;
+        final now = DateTime.now();
+        final dateFormat = DateFormat('dd-MM-yyyy');
+        final dateString = dateFormat.format(now);
+        final databaseRef = FirebaseDatabase.instance
+            .reference()
+            .child('${currentUser?.uid}/isegelenlertbl$dateString');
+        for (final data in _dataList) {
+          if (controllers[_dataList.indexOf(data)].text != '') {
+            databaseRef.child(data.nameSurname).set({
+              'Date': DateTime.now().toString(),
+              'Id' : Uuid().v4().toString(),
+              'NameSurname': data.nameSurname,
+              'QueNumber': controllers[_dataList.indexOf(data)].text
+            });
+            for(final category in categoryList){
+              databaseRef.child(data.nameSurname).child(category.categoryName).set({
+                'PackageCount':''
+              });
+            }
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gün Başlatıldı.')),
+        );
+      }
+
+
+      }
   }
 
   @override
@@ -135,11 +204,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFFCB2B93),
-              Color(0xFF9546C4),
-              Color(0xFF5E61F4)
-            ],
+            colors: [Color(0xFFCB2B93), Color(0xFF9546C4), Color(0xFF5E61F4)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -167,7 +232,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                     controller: _searchController,
                     onChanged: (value) {
                       setState(
-                              () {}); // Yeniden render için setState() çağırılıyor
+                          () {}); // Yeniden render için setState() çağırılıyor
                     },
                     decoration: InputDecoration(
                       labelText: 'İşçi Adı Ara',
@@ -206,63 +271,93 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                           ],
                           rows: _searchController.text.isEmpty
                               ? _dataList
-                              .map(
-                                (data) => DataRow(
-                              cells: [
-                                DataCell(
-                                  SizedBox(
-                                    width: 100,
-                                    child: TextField(
-                                      controller: controllers[_dataList.indexOf(data)],
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: 'Sıra',
-                                      ),
+                                  .map(
+                                    (data) => DataRow(
+                                      cells: [
+                                        DataCell(
+                                          SizedBox(
+                                            width: 100,
+                                            child: TextField(
+                                              controller: controllers[
+                                                  _dataList.indexOf(data)],
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              decoration: InputDecoration(
+                                                hintText: 'Sıra',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(Text(data.nameSurname)),
+                                        DataCell(Text(data.phoneNumber)),
+                                        DataCell(Text(data.overSupply))
+                                      ],
                                     ),
-                                  ),
-                                ),
-                                DataCell(Text(data.nameSurname)),
-                                DataCell(Text(data.phoneNumber)),
-                                DataCell(Text(data.overSupply))
-                              ],
-                            ),
-                          )
-                              .toList()
+                                  )
+                                  .toList()
                               : _dataList
-                              .where((data) => data.nameSurname
-                              .toLowerCase()
-                              .contains(_searchController.text))
-                              .map(
-                                (data) => DataRow(
-                              cells: [
-                                DataCell(
-                                  SizedBox(
-                                    width: 100,
-                                    child: TextField(
-                                      controller: controllers[_dataList.indexOf(data)],
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: 'Sıra',
-                                      ),
+                                  .where((data) => data.nameSurname
+                                      .toLowerCase()
+                                      .contains(_searchController.text))
+                                  .map(
+                                    (data) => DataRow(
+                                      cells: [
+                                        DataCell(
+                                          SizedBox(
+                                            width: 100,
+                                            child: TextField(
+                                              controller: controllers[
+                                                  _dataList.indexOf(data)],
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              decoration: InputDecoration(
+                                                hintText: 'Sıra',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(Text(data.nameSurname)),
+                                        DataCell(Text(data.phoneNumber)),
+                                        DataCell(Text(data.overSupply)),
+                                      ],
                                     ),
-                                  ),
-                                ),
-                                DataCell(Text(data.nameSurname)),
-                                DataCell(Text(data.phoneNumber)),
-                                DataCell(Text(data.overSupply)),
-                              ],
-                            ),
-                          )
-                              .toList(),
+                                  )
+                                  .toList(),
                         ),
                       ),
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: _saveDataToFirebase,
-                  child: const Text('Günü Başlat'),
-                ),
+                Row(
+                  children: [
+                    SizedBox(width: 20),
+                    SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return _CategoryDialog(
+                              dataListCategory: _dataListCategory,
+                            );
+                          },
+                        );
+                      },
+                      child: const Text('Kategori Ekle'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.green,
+                      ),
+                    ),
+                    SizedBox(width: 60),
+                    ElevatedButton(
+                      onPressed: _saveDataToFirebase,
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.redAccent, // Kırmızı renk
+                      ),
+                      child: const Text('Günü Başlat'),
+                    ),
+                  ],
+                )
               ],
             ),
           ],
@@ -270,5 +365,110 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       ),
     );
   }
+}
 
+class _CategoryDialog extends StatefulWidget {
+  final List<Category> dataListCategory;
+
+  const _CategoryDialog({required this.dataListCategory});
+
+  @override
+  State<_CategoryDialog> createState() => _CategoryDialogState();
+}
+
+class _CategoryDialogState extends State<_CategoryDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Günlük Kategori Ekle'),
+      content: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DataTable(
+                columns: const [
+                  DataColumn(
+                    label: Text('Seç'),
+                  ),
+                  DataColumn(
+                    label: Text('Kategori Adı'),
+                  ),
+                  DataColumn(
+                    label: Text('Fire Miktarı'),
+                  ),
+                ],
+                rows: widget.dataListCategory.map((category) {
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        Checkbox(
+                          value: category.isChecked,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              category.isChecked = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      DataCell(Text(category.categoryName)),
+                      DataCell(Text(category.wageCount)),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () async {
+            if (widget.dataListCategory
+                    .where((element) => element.isChecked)
+                    .length == 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Lütfen Kategori Seçiniz!!!')),
+              );
+            }
+            else
+            {
+              final currentUser = FirebaseAuth.instance.currentUser;
+              final now = DateTime.now();
+              final dateFormat = DateFormat('dd-MM-yyyy');
+              final dateString = dateFormat.format(now);
+              final databaseRef = FirebaseDatabase.instance
+                  .reference()
+                  .child('${currentUser?.uid}/günlükKategori$dateString');
+              for (final data in widget.dataListCategory.where((element) => element.isChecked)) {
+                  databaseRef.child(data.categoryName).set({
+                    'CategoryName': data.categoryName,
+                    'WageCount': data.wageCount
+                  });
+              }
+              Navigator.of(context).pop();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Günlük Kategori Eklendi. Artık Günlük Personel Ekleyebilirsiniz.')),
+              );
+
+
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            primary: Colors.lightGreen,
+          ),
+          child: const Text('Ekle'),
+        ),
+        TextButton(
+          child: const Text('Kapat'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
 }
