@@ -5,12 +5,15 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:uuid/uuid.dart';
 
 class AddWorkerScreen extends StatefulWidget {
   const AddWorkerScreen({Key? key}) : super(key: key);
 
   @override
   State<AddWorkerScreen> createState() => _AddWorkerScreenState();
+
+
 }
 
 class _AddWorkerScreenState extends State<AddWorkerScreen> {
@@ -18,6 +21,8 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
   final _workerNameSurnameController = TextEditingController();
   final _workerPhoneNumberController = TextEditingController();
   final _user =FirebaseAuth.instance.currentUser;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +136,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                                 .set({
                               'NameSurname': workerNameSurname,
                               'PhoneNumber': workerPhoneNumber,
-                              'Id': UniqueKey().toString(),
+                              'Id': Uuid().v4().toString(),
                               'OverSupply': 0,
                             });
 

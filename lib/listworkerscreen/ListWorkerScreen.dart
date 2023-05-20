@@ -57,6 +57,7 @@ extension IterableExtension<E> on Iterable<E> {
         key: (item) => index++, value: (item) => item);
   }
 }
+
 List<Category> _dataListCategory = [];
 
 class _ListWorkerScreenState extends State<ListWorkerScreen> {
@@ -147,13 +148,12 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
           .reference()
           .child('${user.uid}/günlükKategori$dateString')
           .once();
-      if(dataSnapshot.snapshot.value==null){
+      if (dataSnapshot.snapshot.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Lütfen Önce Kategori Seçiniz.')),
         );
         return;
-      }
-      else{
+      } else {
         final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
         final categoryList = dataMap.entries.map((entry) {
           final id = entry.key;
@@ -170,29 +170,33 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
         final databaseRef = FirebaseDatabase.instance
             .reference()
             .child('${currentUser?.uid}/isegelenlertbl$dateString');
+
         for (final data in _dataList) {
           if (controllers[_dataList.indexOf(data)].text != '') {
-            databaseRef.child(data.nameSurname).set({
+            final dataNode = databaseRef.child(data.nameSurname);
+            final newData = {
               'Date': DateTime.now().toString(),
-              'Id' : Uuid().v4().toString(),
+              'Id': Uuid().v4().toString(),
               'NameSurname': data.nameSurname,
               'QueNumber': controllers[_dataList.indexOf(data)].text
-            });
-            for(final category in categoryList){
-              databaseRef.child(data.nameSurname).child(category.categoryName).set({
-                'PackageCount':''
-              });
+            };
+            await dataNode.set(newData);
+
+            for (final category in categoryList) {
+              final categoryNode = dataNode.child(category.categoryName);
+              final categoryData = {'PackageCount': ''};
+              await categoryNode.set(categoryData);
             }
           }
         }
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gün Başlatıldı.')),
         );
       }
-
-
-      }
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -428,13 +432,12 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           onPressed: () async {
             if (widget.dataListCategory
                     .where((element) => element.isChecked)
-                    .length == 0) {
+                    .length ==
+                0) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Lütfen Kategori Seçiniz!!!')),
               );
-            }
-            else
-            {
+            } else {
               final currentUser = FirebaseAuth.instance.currentUser;
               final now = DateTime.now();
               final dateFormat = DateFormat('dd-MM-yyyy');
@@ -442,19 +445,20 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               final databaseRef = FirebaseDatabase.instance
                   .reference()
                   .child('${currentUser?.uid}/günlükKategori$dateString');
-              for (final data in widget.dataListCategory.where((element) => element.isChecked)) {
-                  databaseRef.child(data.categoryName).set({
-                    'CategoryName': data.categoryName,
-                    'WageCount': data.wageCount
-                  });
+              for (final data in widget.dataListCategory
+                  .where((element) => element.isChecked)) {
+                databaseRef.child(data.categoryName).set({
+                  'CategoryName': data.categoryName,
+                  'WageCount': data.wageCount
+                });
               }
               Navigator.of(context).pop();
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Günlük Kategori Eklendi. Artık Günlük Personel Ekleyebilirsiniz.')),
+                const SnackBar(
+                    content: Text(
+                        'Günlük Kategori Eklendi. Artık Günlük Personel Ekleyebilirsiniz.')),
               );
-
-
             }
           },
           style: ElevatedButton.styleFrom(

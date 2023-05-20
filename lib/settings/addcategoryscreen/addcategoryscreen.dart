@@ -3,6 +3,7 @@ import 'package:havuc_fabrika_mobil/settings/addcategoryscreen/addcategoryscreen
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:uuid/uuid.dart';
 
 class AddCategoryScreen extends StatefulWidget {
   const AddCategoryScreen({Key? key}) : super(key: key);
@@ -185,7 +186,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                                 .child(categoryname)
                                 .set({
                               'CategoryName': categoryname,
-                              'Id': UniqueKey().toString(),
+                              'Id': Uuid().v4().toString(),
                               'OutagePercent': outagepercent,
                               'Kilogram': kilogram,
                               'WageCount': wagecount

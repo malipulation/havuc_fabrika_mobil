@@ -43,12 +43,11 @@ class WorkerOS {
   final String overSupply;
   final String phoneNumber;
 
-  WorkerOS({
-  required this.nameSurname,
-  required this.id,
-  required this.overSupply,
-  required this.phoneNumber
-  });
+  WorkerOS(
+      {required this.nameSurname,
+      required this.id,
+      required this.overSupply,
+      required this.phoneNumber});
 
   Map<String, dynamic> toMap() {
     return {
@@ -59,8 +58,6 @@ class WorkerOS {
     };
   }
 }
-
-
 
 class PackageMade {
   final String packageCount;
@@ -198,7 +195,8 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
             .reference()
             .child('${user.uid}/iscilertbl')
             .once();
-        final dataMap21 = dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
+        final dataMap21 =
+            dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
 
         var workerOSList = dataMap21.entries.map((entry) {
           final id = entry.key;
@@ -257,47 +255,84 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
           for (final dbemp in _dataList) {
             if (employee.nameSurname == dbemp.nameSurname &&
                 employee.queNumber == dbemp.queNumber) {
-                for(final cat in employee.categories)
-                  {
-                    if(dbemp.categories.where((element) => element.categoryName==cat.categoryName).first.wageCount.length != 0)
-                      {
-                        databaseReference.child('${user.uid}/isegelenlertbl$dateString')
-                            .child(employee.nameSurname)
-                            .child(cat.categoryName).set({
-                          'PackageCount': cat.wageCount+dbemp.categories.where((element) => element.categoryName==cat.categoryName).first.wageCount+','
-                        });
-                        var emp = workerOSList.where((element) => element.nameSurname == employee.nameSurname).first;
-                        var oscount = double.parse(_categoryList.where((element) => element.categoryName==cat.categoryName).first.wageCount);
-                        //TODO buraya onlukla ilgili parametreler eklenecek
-                        oscount = (120/oscount)*double.parse(dbemp.categories.where((element) => element.categoryName==cat.categoryName).first.wageCount);
-                        databaseReference.child('${user.uid}/iscilertbl')
-                            .child(employee.nameSurname).set({
-                          'Id': emp.id,
-                          'NameSurname': emp.nameSurname,
-                          'PhoneNumber': emp.phoneNumber,
-                          'OverSupply': (double.parse(emp.overSupply) +oscount ).toString()
-                        });
-                        final dataSnapshot21 = await FirebaseDatabase.instance
-                            .reference()
-                            .child('${user.uid}/iscilertbl')
-                            .once();
-                        final dataMap21 = dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
+              if(dbemp.categories.length != 0) {
+                for (final cat in employee.categories) {
+                  if (dbemp.categories
+                      .where((element) =>
+                  element.categoryName == cat.categoryName)
+                      .first
+                      .wageCount
+                      .length !=
+                      0) {
+                    databaseReference
+                        .child('${user.uid}/isegelenlertbl$dateString')
+                        .child(employee.nameSurname)
+                        .child(cat.categoryName)
+                        .set({
+                      'PackageCount': cat.wageCount +
+                          dbemp.categories
+                              .where((element) =>
+                          element.categoryName == cat.categoryName)
+                              .first
+                              .wageCount +
+                          '-'
+                    });
+                    var emp = workerOSList
+                        .where((element) =>
+                    element.nameSurname == employee.nameSurname)
+                        .first;
+                    var oscount = double.parse(_categoryList
+                        .where(
+                            (element) => element.categoryName == cat.categoryName)
+                        .first
+                        .wageCount);
+                    //TODO buraya onlukla ilgili parametreler eklenecek
+                    oscount = (110 / oscount) *
+                        double.parse(dbemp.categories
+                            .where((element) =>
+                        element.categoryName == cat.categoryName)
+                            .first
+                            .wageCount);
+                    databaseReference
+                        .child('${user.uid}/iscilertbl')
+                        .child(employee.nameSurname)
+                        .set({
+                      'Id': emp.id,
+                      'NameSurname': emp.nameSurname,
+                      'PhoneNumber': emp.phoneNumber,
+                      'OverSupply':
+                      (double.parse(emp.overSupply) + oscount).toString()
+                    });
+                    final dataSnapshot21 = await FirebaseDatabase.instance
+                        .reference()
+                        .child('${user.uid}/iscilertbl')
+                        .once();
+                    final dataMap21 =
+                    dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
 
-                         workerOSList = dataMap21.entries.map((entry) {
-                          final id = entry.key;
-                          final data = entry.value as Map<dynamic, dynamic>;
-                          return WorkerOS(
-                            nameSurname: data['NameSurname'].toString(),
-                            phoneNumber: data['PhoneNumber'].toString(),
-                            id: data['Id'].toString(),
-                            overSupply: (data['OverSupply']).toString(),
-                          );
-                        }).toList();
-                      }
+                    workerOSList = dataMap21.entries.map((entry) {
+                      final id = entry.key;
+                      final data = entry.value as Map<dynamic, dynamic>;
+                      return WorkerOS(
+                        nameSurname: data['NameSurname'].toString(),
+                        phoneNumber: data['PhoneNumber'].toString(),
+                        id: data['Id'].toString(),
+                        overSupply: (data['OverSupply']).toString(),
+                      );
+                    }).toList();
+
                   }
+                }
+              }
             }
           }
         }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  UpdatePackageScreen()),
+        );
       }
     } catch (error) {
       print('Error fetching data: $error');
