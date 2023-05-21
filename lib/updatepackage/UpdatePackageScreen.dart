@@ -155,6 +155,9 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
         }).toList();
         setState(() {
           _dataList = employeeList;
+          _dataList.sort((a, b) => a.queNumber != null && b.queNumber != null
+              ? a.queNumber!.compareTo(b.queNumber!)
+              : 0); // Sıralama yap
           _searchResults = employeeList;
           _categoryList = categoryList;
           // Generate controllers for each employee
@@ -175,6 +178,225 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
       final queryLower = query.toLowerCase();
       return nameSurnameLower.contains(queryLower);
     }).toList();
+  }
+
+  Future<void> _showSummaryModal() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final now = DateTime.now();
+        final dateFormat = DateFormat('dd-MM-yyyy');
+        final dateString = dateFormat.format(now);
+
+        final dataSnapshot = await FirebaseDatabase.instance
+            .reference()
+            .child('${user.uid}/isegelenlertbl$dateString')
+            .once();
+        final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
+
+        final dataSnapshot21 = await FirebaseDatabase.instance
+            .reference()
+            .child('${user.uid}/iscilertbl')
+            .once();
+        final dataMap21 =
+            dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
+
+        var workerOSList = dataMap21.entries.map((entry) {
+          final id = entry.key;
+          final data = entry.value as Map<dynamic, dynamic>;
+          return WorkerOS(
+            nameSurname: data['NameSurname'].toString(),
+            phoneNumber: data['PhoneNumber'].toString(),
+            id: data['Id'].toString(),
+            overSupply: (data['OverSupply']).toString(),
+          );
+        }).toList();
+        final emplist = dataMap.entries.map((entry) {
+          final id = entry.key;
+          final data = entry.value as Map<dynamic, dynamic>;
+          return Employee(
+            nameSurname: data['NameSurname'],
+            date: data['Date'],
+            id: data['Id'].toString(),
+            queNumber: data['QueNumber'],
+          );
+        }).toList();
+
+        // İşlem başladı, ilerleme göstergesi göster
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        );
+
+        for (final emp in emplist) {
+          for (final cat in _categoryList) {
+            var tempsnap = await FirebaseDatabase.instance
+                .reference()
+                .child('${user.uid}/isegelenlertbl$dateString')
+                .child(emp.nameSurname)
+                .child(cat.categoryName)
+                .once();
+            var tempmap = tempsnap.snapshot.value as Map<dynamic, dynamic>;
+            var tempcat = PackageMade(
+              packageCount: tempmap['PackageCount'],
+            );
+            emp.categories.add(Category(
+              categoryName: cat.categoryName,
+              wageCount: tempcat.packageCount,
+            ));
+          }
+        }
+
+        // İşlem tamamlandı, ilerleme göstergesini kapat
+        Navigator.pop(context);
+
+        // Modal açılışında kullanılacak olan DataTable oluşturuluyor
+        final dataTable = DataTable(
+          columns: [
+            DataColumn(label: Text('Sıra Numarası')),
+            DataColumn(label: Text('Adı Soyadı')),
+            ..._categoryList
+                .map((cat) => DataColumn(label: Text(cat.categoryName))),
+          ],
+          rows: emplist
+              .map((emp) => DataRow(
+                    cells: [
+                      DataCell(Text(emp.queNumber.toString())),
+                      DataCell(Text(emp.nameSurname)),
+                      ...emp.categories
+                          .map((cat) => DataCell(Text(cat.wageCount))),
+                    ],
+                  ))
+              .toList(),
+        );
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return SingleChildScrollView(
+              child: AlertDialog(
+                title: Text('Gün Özeti'),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      dividerThickness: 1.0,
+                      columns: [
+                        DataColumn(
+                          label: Container(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Sıra Numarası'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Container(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Adı Soyadı'),
+                          ),
+                        ),
+                        ..._categoryList.map(
+                          (cat) => DataColumn(
+                            label: Container(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(cat.categoryName),
+                            ),
+                          ),
+                        ),
+                      ],
+                      rows: emplist.map(
+                        (emp) {
+                          return DataRow(cells: [
+                            DataCell(
+                              Container(
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    right: BorderSide(
+                                        width: 1.0, color: Colors.black),
+                                    bottom: BorderSide(
+                                        width: 1.0, color: Colors.black),
+                                  ),
+                                ),
+                                child: Text(emp.queNumber.toString()),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    right: BorderSide(
+                                        width: 1.0, color: Colors.black),
+                                    bottom: BorderSide(
+                                        width: 1.0, color: Colors.black),
+                                  ),
+                                ),
+                                child: Text(emp.nameSurname),
+                              ),
+                            ),
+                            ...emp.categories.map(
+                              (cat) => DataCell(
+                                Container(
+                                  padding: EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      right: BorderSide(
+                                          width: 1.0, color: Colors.black),
+                                      bottom: BorderSide(
+                                          width: 1.0, color: Colors.black),
+                                    ),
+                                  ),
+                                  child: Text(cat.wageCount),
+                                ),
+                              ),
+                            ),
+                          ]);
+                        },
+                      ).toList(),
+                    ),
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text('Tamam'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
+    } catch (error) {
+      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Hata'),
+            content: Text(
+                'Verileri listeleme sırasında bir hata oluştu. Lütfen Bizimle İletişime Geçin'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Tamam'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      print('Error fetching data: $error');
+    }
   }
 
   Future<void> _saveDataToFirebase() async {
@@ -219,6 +441,17 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
           );
         }).toList();
 
+        // İşlem başladı, ilerleme göstergesi göster
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        );
+
         for (final emp in emplist) {
           for (final cat in _categoryList) {
             var tempsnap = await FirebaseDatabase.instance
@@ -237,32 +470,37 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
             ));
           }
         }
+
+        // İşlem tamamlandı, ilerleme göstergesini kapat
+        Navigator.pop(context);
+
         /*for (final employee in emplist) {
-          print('NameSurname: ${employee.nameSurname}');
-          print('Id: ${employee.id}');
-          print('Date: ${employee.date}');
-          print('QueNumber: ${employee.queNumber}');
-          if (employee.categories != null) {
-            for (final category in employee.categories!) {
-              print('CategoryName: ${category.categoryName}');
-              print('WageCount: ${category.wageCount}');
-            }
+        print('NameSurname: ${employee.nameSurname}');
+        print('Id: ${employee.id}');
+        print('Date: ${employee.date}');
+        print('QueNumber: ${employee.queNumber}');
+        if (employee.categories != null) {
+          for (final category in employee.categories!) {
+            print('CategoryName: ${category.categoryName}');
+            print('WageCount: ${category.wageCount}');
           }
-        }*/
+        }
+      }*/
+
         final databaseReference = FirebaseDatabase.instance.reference();
         //Emplist dbden çekilen _datalist buradaki
         for (final employee in emplist) {
           for (final dbemp in _dataList) {
             if (employee.nameSurname == dbemp.nameSurname &&
                 employee.queNumber == dbemp.queNumber) {
-              if(dbemp.categories.length != 0) {
+              if (dbemp.categories.length != 0) {
                 for (final cat in employee.categories) {
                   if (dbemp.categories
-                      .where((element) =>
-                  element.categoryName == cat.categoryName)
-                      .first
-                      .wageCount
-                      .length !=
+                          .where((element) =>
+                              element.categoryName == cat.categoryName)
+                          .first
+                          .wageCount
+                          .length !=
                       0) {
                     databaseReference
                         .child('${user.uid}/isegelenlertbl$dateString')
@@ -272,25 +510,25 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
                       'PackageCount': cat.wageCount +
                           dbemp.categories
                               .where((element) =>
-                          element.categoryName == cat.categoryName)
+                                  element.categoryName == cat.categoryName)
                               .first
                               .wageCount +
                           '-'
                     });
                     var emp = workerOSList
                         .where((element) =>
-                    element.nameSurname == employee.nameSurname)
+                            element.nameSurname == employee.nameSurname)
                         .first;
                     var oscount = double.parse(_categoryList
-                        .where(
-                            (element) => element.categoryName == cat.categoryName)
+                        .where((element) =>
+                            element.categoryName == cat.categoryName)
                         .first
                         .wageCount);
                     //TODO buraya onlukla ilgili parametreler eklenecek
                     oscount = (110 / oscount) *
                         double.parse(dbemp.categories
                             .where((element) =>
-                        element.categoryName == cat.categoryName)
+                                element.categoryName == cat.categoryName)
                             .first
                             .wageCount);
                     databaseReference
@@ -301,14 +539,15 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
                       'NameSurname': emp.nameSurname,
                       'PhoneNumber': emp.phoneNumber,
                       'OverSupply':
-                      (double.parse(emp.overSupply) + oscount).toString()
+                          (double.parse(emp.overSupply) + oscount).toString()
                     });
+
                     final dataSnapshot21 = await FirebaseDatabase.instance
                         .reference()
                         .child('${user.uid}/iscilertbl')
                         .once();
                     final dataMap21 =
-                    dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
+                        dataSnapshot21.snapshot.value as Map<dynamic, dynamic>;
 
                     workerOSList = dataMap21.entries.map((entry) {
                       final id = entry.key;
@@ -320,21 +559,41 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
                         overSupply: (data['OverSupply']).toString(),
                       );
                     }).toList();
-
                   }
                 }
               }
             }
           }
         }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Paket Güncelleme İşlemi Başarılı!')),
+        );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  UpdatePackageScreen()),
+              builder: (BuildContext context) => UpdatePackageScreen()),
         );
       }
     } catch (error) {
+      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Hata'),
+            content: Text(
+                'Verileri kaydetme sırasında bir hata oluştu. Lütfen Bizimle İletişime Geçin'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Tamam'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
       print('Error fetching data: $error');
     }
   }
@@ -390,68 +649,107 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
                   ),
                 ),
                 Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: [
-                        DataColumn(label: Text('Sıra Numarası')),
-                        DataColumn(label: Text('İsim Soyisim')),
-                        ..._categoryList.map(
-                          (category) =>
-                              DataColumn(label: Text(category.categoryName)),
+                  child: ListView(
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          columns: [
+                            DataColumn(label: Text('Sıra Numarası')),
+                            DataColumn(label: Text('İsim Soyisim')),
+                            ..._categoryList.map(
+                              (category) => DataColumn(
+                                  label: Text(category.categoryName)),
+                            ),
+                          ],
+                          rows: _searchResults.map(
+                            (employee) {
+                              final employeeIndex =
+                                  _searchResults.indexOf(employee);
+
+                              return DataRow(
+                                cells: [
+                                  DataCell(Text(employee.queNumber.toString())),
+                                  DataCell(Text(employee.nameSurname)),
+                                  ..._categoryList.asMap().entries.map(
+                                    (entry) {
+                                      final categoryIndex = entry.key;
+                                      final Category category = entry.value;
+                                      final TextEditingController controller =
+                                          controllers[employeeIndex]
+                                              [categoryIndex];
+
+                                      return DataCell(
+                                        TextFormField(
+                                          controller: controller,
+                                          keyboardType: TextInputType.number,
+                                          decoration: InputDecoration(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              employee.categories =
+                                                  _categoryList.map(
+                                                (category) {
+                                                  final categoryIndex =
+                                                      _categoryList
+                                                          .indexOf(category);
+                                                  final wageCount =
+                                                      controllers[employeeIndex]
+                                                              [categoryIndex]
+                                                          .text;
+
+                                                  return Category(
+                                                    categoryName:
+                                                        category.categoryName,
+                                                    wageCount: wageCount,
+                                                  );
+                                                },
+                                              ).toList();
+                                            });
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ).toList(),
+                                ],
+                              );
+                            },
+                          ).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                BottomAppBar(
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    height: 56.0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _saveDataToFirebase,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            primary: Colors.blue,
+                          ),
+                          child: Text('Kaydet'),
+                        ),
+                        ElevatedButton(
+                          onPressed: _showSummaryModal,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            primary: Colors.green,
+                          ),
+                          child: Text('Özet'),
                         ),
                       ],
-                      rows: _searchResults.map(
-                        (employee) {
-                          final employeeIndex =
-                              _searchResults.indexOf(employee);
-
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(employee.queNumber.toString())),
-                              DataCell(Text(employee.nameSurname)),
-                              ..._categoryList.asMap().entries.map(
-                                (entry) {
-                                  final categoryIndex = entry.key;
-                                  final Category category = entry.value;
-                                  final TextEditingController controller =
-                                      controllers[employeeIndex][categoryIndex];
-
-                                  return DataCell(
-                                    TextFormField(
-                                      controller: controller,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          employee.categories =
-                                              _categoryList.map(
-                                            (category) {
-                                              final categoryIndex =
-                                                  _categoryList
-                                                      .indexOf(category);
-                                              final wageCount =
-                                                  controllers[employeeIndex]
-                                                          [categoryIndex]
-                                                      .text;
-
-                                              return Category(
-                                                categoryName:
-                                                    category.categoryName,
-                                                wageCount: wageCount,
-                                              );
-                                            },
-                                          ).toList();
-                                        });
-                                      },
-                                    ),
-                                  );
-                                },
-                              ).toList(),
-                            ],
-                          );
-                        },
-                      ).toList(),
                     ),
                   ),
                 ),
@@ -459,10 +757,6 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _saveDataToFirebase,
-        child: const Icon(Icons.save),
       ),
     );
   }
