@@ -294,7 +294,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                                         ),
                                         DataCell(Text(data.nameSurname)),
                                         DataCell(Text(data.phoneNumber)),
-                                        DataCell(Text(data.overSupply))
+                                        DataCell(Text(double.parse(data.overSupply).toStringAsFixed(1)))
                                       ],
                                     ),
                                   )

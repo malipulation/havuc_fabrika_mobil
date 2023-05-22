@@ -14,6 +14,7 @@ import 'package:havuc_fabrika_mobil/settings/settingsscreen.dart';
 import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
 import 'package:havuc_fabrika_mobil/updatepackage/UpdatePackageScreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:havuc_fabrika_mobil/workerspaymentscreen/WorkersPaymentScreen.dart';
 import '../listworkerscreen/ListWorkerScreen.dart';
 import '../reusable_widgets/ReusableWidget.dart';
 
@@ -119,6 +120,10 @@ class _GridMenuState extends State<GridMenu> {
             ListTile(
               title: const Text('İşçiler'),
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WorkersPaymentScreen()),
+                );
               },
             ),
             ListTile(
