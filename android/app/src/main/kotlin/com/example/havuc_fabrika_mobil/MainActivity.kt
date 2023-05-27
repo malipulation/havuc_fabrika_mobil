@@ -1,4 +1,4 @@
-package com.example.havuc_fabrika_mobil
+package com.mhpro.android
 
 import io.flutter.embedding.android.FlutterActivity
 

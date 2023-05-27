@@ -122,6 +122,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          keyboardType: TextInputType.number,
                           controller: _expenseAmount,
                           decoration: const InputDecoration(
                             labelText: 'Ne Kadar Ödeme Yapıldı.',
@@ -220,13 +221,14 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                                 .child('odemelertbl')
                                 .child(guid)
                                 .set({
+                              'Id' : Uuid().v4(),
                               'Date': _selectedDate.toString(),
                               'Description': _description.text,
                               'ExpenseAmount': _expenseAmount.text,
                               'WhoWasExpense': _whoWasExpense.text,
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Gider Eklendi.')),
+                              const SnackBar(content: Text('Gider Eklendi.'), backgroundColor: Colors.green),
                             );
                             _whoWasExpense.text = "";
                             _expenseAmount.text = "";
@@ -238,7 +240,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Ödeme Yapılan Yer veya Miktar Boş Girilemez!')),
+                                content: Text('Ödeme Yapılan Yer veya Miktar Boş Girilemez!'), backgroundColor: Colors.red),
                           );
                         }
                       },

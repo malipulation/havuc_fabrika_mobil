@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:987021140749:android:e2dcb20cb3ae1540204644",
+        "mobilesdk_app_id": "1:987021140749:android:6372e2a11c62f7e5204644",
         "android_client_info": {
-          "package_name": "com.example.havuc_fabrika_mobil"
+          "package_name": "com.mhpro.android"
         }
       },
       "oauth_client": [

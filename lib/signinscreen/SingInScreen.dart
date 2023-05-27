@@ -24,17 +24,14 @@ class _SignInScreenState extends State<SignInScreen> {
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
-              hexStringToColor("CB2B93"),
-              hexStringToColor("9546C4"),
-              hexStringToColor("5E61F4")
-            ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+          hexStringToColor("CB2B93"),
+          hexStringToColor("9546C4"),
+          hexStringToColor("5E61F4")
+        ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-                50, MediaQuery
-                .of(context)
-                .size
-                .height * 0.2, 40, 1000),
+                50, MediaQuery.of(context).size.height * 0.2, 40, 1000),
             child: Column(
               children: <Widget>[
                 logoWidget("assets/images/logo-no-background.png"),
@@ -52,23 +49,35 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 signInSignUpButton(context, true, () {
-                  //if(FirebaseAuth.instance.currentUser!.emailVerified){
-                    FirebaseAuth.instance.signInWithEmailAndPassword(
-                        email: _emailTextController.text,
-                        password: _passwordTextController.text).then((value){
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => GridMenu()));
-                    } );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Giriş Başarılı.")),
-                    );
-                  //}
-                  /*else
-                    {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Lütfen Mail Adresinizden Hesabınızı Doğrulayın!")),
+                  FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: _emailTextController.text,
+                          password: _passwordTextController.text)
+                      .then((UserCredential userCredential) {
+                    // Oturum açma başarılı olduğunda yapılacak işlemler
+                    if (userCredential.user!.emailVerified) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => GridMenu()),
                       );
-                    }*/
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Giriş Başarılı.")),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                "Lütfen Mail Adresinizden Hesabınızı Doğrulayın!")),
+                      );
+                    }
+                  }).catchError((error) {
+// Oturum açma başarısız olduğunda yapılacak işlemler
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text("Hatalı giriş. Şifrenizi kontrol edin.")),
+                    );
+                  });
                 }),
                 signUpOption()
               ],
@@ -90,7 +99,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 MaterialPageRoute(builder: (context) => SignUpScreen()));
           },
           child: const Text(
-            "  Kayıt Ol",
+            " Kayıt Ol",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         )

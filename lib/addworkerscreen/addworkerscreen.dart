@@ -105,6 +105,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                         ),
                         child: TextFormField(
                           controller: _workerPhoneNumberController,
+                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Telefon Numarası Giriniz',
                             labelStyle: TextStyle(
@@ -126,7 +127,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                         String workerNameSurname = _workerNameSurnameController.text;
                         String workerPhoneNumber = _workerPhoneNumberController.text;
 
-                        if (workerNameSurname.isNotEmpty && workerPhoneNumber.isNotEmpty) {
+                        if (workerNameSurname.isNotEmpty && workerPhoneNumber.isNotEmpty && workerPhoneNumber.length==10) {
                           try {
                             final databaseReference = FirebaseDatabase.instance.reference();
                             await databaseReference
@@ -141,7 +142,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('İşçi Eklendi.')),
+                              const SnackBar(content: Text('İşçi Eklendi.'),backgroundColor: Colors.green,),
                             );
                             _workerNameSurnameController.text="";
                             _workerPhoneNumberController.text="";
@@ -149,6 +150,19 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                           } catch (e) {
                             print('Error: $e');
                           }
+                        }
+                        else {
+                          if(workerNameSurname.isEmpty || workerPhoneNumber.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Lütfen Alanları Boş Bırakmayınız!'),backgroundColor: Colors.red,),
+                            );
+                          }
+                          else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Telefon Numarası 10 Haneli Olmalıdır!'),backgroundColor: Colors.red,),
+                            );
+                          }
+
                         }
                       },
 

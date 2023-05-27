@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:uuid/uuid.dart';
 
 class SetSales extends StatefulWidget {
   const SetSales({Key? key}) : super(key: key);
@@ -377,8 +378,9 @@ class _SetSalesState extends State<SetSales> {
                                       .child(_user?.uid ?? '')
                                       .child('satistbl')
                                       .child(
-                                      '${DateTime.now().toString().replaceAll('.', '-')} ${_companyname.text}')
+                                      Uuid().v4())
                                       .set({
+                                    'Id' : Uuid().v4(),
                                     'CompanyName': _companyname.text,
                                     'Date': DateTime.now().toString(),
                                     'SalePrice': _salesprice.text,
@@ -419,6 +421,7 @@ class _SetSalesState extends State<SetSales> {
                                       .child(
                                       '${DateTime.now().toString().replaceAll('.', '-')} ${_companyname.text}')
                                       .set({
+                                    'Id' : Uuid().v4(),
                                     'CompanyName': _companyname.text,
                                     'Date': DateTime.now().toString(),
                                     'SalePrice': _salesprice.text,

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.havuc_fabrika_mobil">
+    package="com.mhpro.android">
    <application
         android:label="havuc_fabrika_mobil"
         android:name="${applicationName}"
