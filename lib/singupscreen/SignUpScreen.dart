@@ -21,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -31,59 +32,86 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
       body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height,
         decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-          hexStringToColor("CB2B93"),
-          hexStringToColor("9546C4"),
-          hexStringToColor("5E61F4")
-        ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 120, 20, 0),
-            child: Column(
-              children: <Widget>[
-                const SizedBox(
-                  height: 20,
-                ),
-                reusableTextField("İsim Soyisim", Icons.person_outline, false,
-                    _nameSurnameTextController),
-                const SizedBox(
-                  height: 20,
-                ),
-                reusableTextField("Mail Adresi", Icons.person_outline, false,
-                    _emailTextController),
-                const SizedBox(
-                  height: 20,
-                ),
-                reusableTextField(
-                    "Şifre", Icons.lock_outline, true, _passwordTextController),
-                const SizedBox(
-                  height: 20,
-                ),
-                signInSignUpButton(context, false, () {
-                  FirebaseAuth.instance
+          gradient: LinearGradient(
+            colors: [
+              hexStringToColor("CB2B93"),
+              hexStringToColor("9546C4"),
+              hexStringToColor("5E61F4"),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).size.height*0.33, 20, 0),
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 20),
+              reusableTextField(
+                "İsim Soyisim",
+                Icons.person_outline,
+                false,
+                _nameSurnameTextController,
+              ),
+              const SizedBox(height: 20),
+              reusableTextField(
+                "Mail Adresi",
+                Icons.person_outline,
+                false,
+                _emailTextController,
+              ),
+              const SizedBox(height: 20),
+              reusableTextField(
+                "Şifre",
+                Icons.lock_outline,
+                true,
+                _passwordTextController,
+              ),
+              const SizedBox(height: 20),
+              signInSignUpButton(context, false, () async {
+                try {
+                  UserCredential userCredential = await FirebaseAuth.instance
                       .createUserWithEmailAndPassword(
-                          email: _emailTextController.text,
-                          password: _passwordTextController.text)
-                      .then((value) {
-                    FirebaseAuth.instance.currentUser?.sendEmailVerification();
+                    email: _emailTextController.text,
+                    password: _passwordTextController.text,
+                  );
 
-                    FirebaseAuth.instance.currentUser!.updateDisplayName(_nameSurnameTextController.text);
+                  User? user = userCredential.user;
+                  if (user != null) {
+                    await user.sendEmailVerification();
+
+                    await user.updateDisplayName(
+                        _nameSurnameTextController.text);
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Hesap Oluşturuldu E-Postanıza Doğrulama Mesajı Yollanmıştır.(Spam Klasörünü Kontrol Ediniz)")),
+                      const SnackBar(
+                        content: Text(
+                          "Hesap Oluşturuldu. E-Postanıza Doğrulama Mesajı Yollanmıştır. (Spam Klasörünü Kontrol Ediniz)",
+                        ),
+                      ),
                     );
+
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SignInScreen()));
-                  }).onError((error, stackTrace) {
-                    print("Error ${error.toString()}");
-                  });
-                })
-              ],
-            ),
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SignInScreen(),
+                      ),
+                    );
+                  }
+                } catch (error) {
+                  print("Error: ${error.toString()}");
+                }
+              }),
+            ],
           ),
         ),
       ),

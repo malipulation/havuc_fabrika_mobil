@@ -118,23 +118,6 @@ class _ListCategoryScreenState extends State<ListCategoryScreen> {
     } catch (error) {
       print('Error fetching data: $error');
       // Show an error message to the user
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text('Error fetching data: $error'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
     }
   }
 

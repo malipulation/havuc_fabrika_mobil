@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -42,7 +43,7 @@ class Category {
   Category({
     required this.categoryName,
     required this.wageCount,
-    this.isChecked = false, // Varsayılan değeri false olarak ayarlayın
+    this.isChecked = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -63,7 +64,7 @@ List<Category> _dataListCategory = [];
 class _ListWorkerScreenState extends State<ListWorkerScreen> {
   final _logoPath = 'assets/images/logo-no-background.png';
   List<TextEditingController> controllers = [];
-
+  List<Category> tempcat = [];
   List<Employee> _dataList = [];
   final _searchController =
       TextEditingController(); // Textfield için controller
@@ -97,30 +98,35 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
             .child(user.uid)
             .child('kategoritbl')
             .once();
-        final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
-        final dataMap2 = dataSnapshot2.snapshot.value as Map<dynamic, dynamic>;
 
+        if (dataSnapshot2.snapshot.value != null) {
+          final dataMap2 =
+              dataSnapshot2.snapshot.value as Map<dynamic, dynamic>;
+          final categoryList = dataMap2.entries.map((entry) {
+            final id = entry.key;
+            final data = entry.value as Map<dynamic, dynamic>;
+            return Category(
+              categoryName: data['CategoryName'],
+              wageCount: (data['WageCount'].toString()),
+            );
+          }).toList();
+          tempcat = categoryList;
+        }
+
+        final dataMap = dataSnapshot.snapshot.value as Map<dynamic, dynamic>;
         final employeeList = dataMap.entries.map((entry) {
           final id = entry.key;
           final data = entry.value as Map<dynamic, dynamic>;
           return Employee(
-            nameSurname: data['NameSurname'],
-            phoneNumber: data['PhoneNumber'],
+            nameSurname: data['NameSurname'].toString(),
+            phoneNumber: data['PhoneNumber'].toString(),
             overSupply: data['OverSupply'].toString(),
-          );
-        }).toList();
-        final categoryList = dataMap2.entries.map((entry) {
-          final id = entry.key;
-          final data = entry.value as Map<dynamic, dynamic>;
-          return Category(
-            categoryName: data['CategoryName'],
-            wageCount: data['WageCount'],
           );
         }).toList();
 
         setState(() {
           _dataList = employeeList;
-          _dataListCategory = categoryList;
+          _dataListCategory = tempcat;
           controllers =
               List.generate(_dataList.length, (_) => TextEditingController());
         });
@@ -178,7 +184,7 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
               'Date': DateTime.now().toString(),
               'Id': Uuid().v4().toString(),
               'NameSurname': data.nameSurname,
-              'QueNumber': controllers[_dataList.indexOf(data)].text
+              'QueNumber': int.parse(controllers[_dataList.indexOf(data)].text)
             };
             await dataNode.set(newData);
 
@@ -196,7 +202,6 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -286,6 +291,11 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                                                   _dataList.indexOf(data)],
                                               keyboardType:
                                                   TextInputType.number,
+                                              inputFormatters: <
+                                                  TextInputFormatter>[
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
                                               decoration: InputDecoration(
                                                 hintText: 'Sıra',
                                               ),
@@ -294,7 +304,9 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                                         ),
                                         DataCell(Text(data.nameSurname)),
                                         DataCell(Text(data.phoneNumber)),
-                                        DataCell(Text(double.parse(data.overSupply).toStringAsFixed(1)))
+                                        DataCell(Text(
+                                            double.parse(data.overSupply)
+                                                .toStringAsFixed(1)))
                                       ],
                                     ),
                                   )
@@ -312,6 +324,11 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                                             child: TextField(
                                               controller: controllers[
                                                   _dataList.indexOf(data)],
+                                              inputFormatters: <
+                                                  TextInputFormatter>[
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
                                               keyboardType:
                                                   TextInputType.number,
                                               decoration: InputDecoration(
@@ -322,7 +339,8 @@ class _ListWorkerScreenState extends State<ListWorkerScreen> {
                                         ),
                                         DataCell(Text(data.nameSurname)),
                                         DataCell(Text(data.phoneNumber)),
-                                        DataCell(Text(data.overSupply)),
+                                        DataCell(
+                                            Text(data.overSupply.toString())),
                                       ],
                                     ),
                                   )
@@ -418,7 +436,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                         ),
                       ),
                       DataCell(Text(category.categoryName)),
-                      DataCell(Text(category.wageCount)),
+                      DataCell(Text(category.wageCount.toString())),
                     ],
                   );
                 }).toList(),

@@ -245,9 +245,9 @@ class _SetSalesState extends State<SetSales> {
                         child: TextFormField(
                           controller: _saleamount,
                           keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
+                          /*inputFormatters: <TextInputFormatter>[
                             FilteringTextInputFormatter.digitsOnly
-                          ],
+                          ],*/
                           decoration: const InputDecoration(
                             labelText: 'Satış Miktarı Giriniz(Adet)',
                             labelStyle: TextStyle(
@@ -277,9 +277,6 @@ class _SetSalesState extends State<SetSales> {
                         child: TextFormField(
                           controller: _salesprice,
                           keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
                           decoration: const InputDecoration(
                             labelText: 'Satış Fiyatı',
                             labelStyle: TextStyle(
@@ -383,8 +380,8 @@ class _SetSalesState extends State<SetSales> {
                                     'Id' : Uuid().v4(),
                                     'CompanyName': _companyname.text,
                                     'Date': DateTime.now().toString(),
-                                    'SalePrice': _salesprice.text,
-                                    'SalesAmount': (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString() ,
+                                    'SalePrice': double.parse(_salesprice.text),
+                                    'SalesAmount': double.parse((int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString()) ,
                                     'WhatIs': _selectedCategory,
                                     'Description': _description.text
                                   });
@@ -418,30 +415,29 @@ class _SetSalesState extends State<SetSales> {
                                   await databaseReference
                                       .child(_user?.uid ?? '')
                                       .child('satistbl')
-                                      .child(
-                                      '${DateTime.now().toString().replaceAll('.', '-')} ${_companyname.text}')
+                                      .child(Uuid().v4())
                                       .set({
                                     'Id' : Uuid().v4(),
                                     'CompanyName': _companyname.text,
                                     'Date': DateTime.now().toString(),
-                                    'SalePrice': _salesprice.text,
-                                    'SalesAmount': (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString() ,
+                                    'SalePrice': double.parse(_salesprice.text),
+                                    'SalesAmount': (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))) ,
                                     'WhatIs': _selectedCategory,
                                     'Description': _description.text
                                   });
-
                                   final databaseReference1 =
                                   FirebaseDatabase.instance.reference();
                                   var company = _dataList.where((element) => element.companyName==_companyname.text).first;
-                                  var lastkilo = (int.parse(_saleamount.text)- (int.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(int.parse(_saleamount.text))).toString();
+                                  var lastkilo = (double.parse(_saleamount.text)- (double.parse(_categoryList.where((element) => element.categoryName==_selectedCategory).first.outagePercent)/100)*(double.parse(_saleamount.text))).toString();
+                                  print(company.dept+'--------------------------------'+company.received);
                                   await databaseReference1
                                       .child(_user?.uid ?? '')
                                       .child('sirkettbl')
                                       .child(_companyname.text)
                                       .set({
                                     'CompanyName': _companyname.text,
-                                    'Dept': int.parse(company.dept) !=0 ||  (double.parse(lastkilo)*int.parse(_salesprice.text))>= int.parse(company.received)   ? int.parse(company.dept)+ (double.parse(lastkilo)*int.parse(_salesprice.text)) - int.parse(company.received) : company.dept ,
-                                    'Received': int.parse(company.received)!=0 && (double.parse(lastkilo)*int.parse(_salesprice.text))< int.parse(company.received) ? int.parse(company.received)-(double.parse(lastkilo)*int.parse(_salesprice.text)) : '0'
+                                    'Dept': double.parse(company.dept) !=0 ||  (double.parse(lastkilo)*double.parse(_salesprice.text))>= double.parse(company.received)   ? (double.parse(company.dept)+ (double.parse(lastkilo)*double.parse(_salesprice.text)) - double.parse(company.received)).toStringAsFixed(2) : double.parse(company.dept).toStringAsFixed(2) ,
+                                    'Received': double.parse(company.received)!=0 && (double.parse(lastkilo)*double.parse(_salesprice.text))< double.parse(company.received) ? (double.parse(company.received)-(double.parse(lastkilo)*double.parse(_salesprice.text))).toStringAsFixed(2) : '0'
                                   });
 
                                   String Companyname = _companyname.text;
@@ -514,6 +510,7 @@ class _SetSalesState extends State<SetSales> {
                                 backgroundColor: Colors.red),
                           );
                         }
+                        _fetchData();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

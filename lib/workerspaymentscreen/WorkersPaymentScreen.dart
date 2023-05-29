@@ -31,7 +31,7 @@ class _CategoryDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        DataCell(Text(category.queNumber)),
+        DataCell(Text(category.queNumber.toString())),
         DataCell(Text(category.nameSurname)),
         DataCell(Text(category.phoneNumber)),
         DataCell(Text(category.ticketCount.toString())),
@@ -54,7 +54,7 @@ class Employee {
   final String nameSurname;
   final String id;
   final String date;
-  final String queNumber;
+  final int queNumber;
   Employee({
     required this.nameSurname,
     required this.id,
@@ -94,7 +94,7 @@ class WorkerOS {
 }
 
 class DailyWorkerEmployeeDTO {
-  final String queNumber;
+  final int queNumber;
   final String nameSurname;
   final String overSupply;
   final String phoneNumber;

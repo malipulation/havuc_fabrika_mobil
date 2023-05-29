@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:uuid/uuid.dart';
 
 class UpdateCategoryScreen extends StatefulWidget {
   const UpdateCategoryScreen({Key? key}) : super(key: key);
@@ -184,6 +186,12 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
                           controller: _outagepercent,
                           decoration: const InputDecoration(
                             labelText: 'Fire Miktarını Giriniz',
@@ -211,6 +219,12 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
                           controller: _kilogram,
                           decoration: const InputDecoration(
                             labelText: 'Kilogramı Giriniz',
@@ -238,6 +252,12 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
+                          keyboardType: TextInputType.number,
                           controller: _wagecount,
                           decoration: const InputDecoration(
                             labelText: '1 Yevmiye Kaç Pakettir',
@@ -270,10 +290,10 @@ class _UpdateCategoryScreenState extends State<UpdateCategoryScreen> {
                                 .child(_selectedCategory.toString())
                                 .set({
                               'CategoryName': _selectedCategory.toString(),
-                              'Id': UniqueKey().toString(),
-                              'OutagePercent': outagepercent,
-                              'Kilogram': kilogram,
-                              'WageCount': wagecount
+                              'Id': Uuid().v4().toString(),
+                              'OutagePercent': (outagepercent),
+                              'Kilogram': (kilogram),
+                              'WageCount': (wagecount)
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(

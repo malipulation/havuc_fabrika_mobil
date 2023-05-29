@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/settings/addcategoryscreen/addcategoryscreen.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -99,7 +100,13 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
                           controller: _outagepercent,
+                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Fire Miktarını Giriniz',
                             labelStyle: TextStyle(
@@ -126,7 +133,13 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
                           controller: _kilogram,
+                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Kilogramı Giriniz',
                             labelStyle: TextStyle(
@@ -153,7 +166,13 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           border: Border.all(color: Colors.black, width: 2),
                         ),
                         child: TextFormField(
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
                           controller: _wagecount,
+                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: '1 Yevmiye Kaç Pakettir',
                             labelStyle: TextStyle(

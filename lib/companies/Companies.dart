@@ -76,12 +76,12 @@ class _CompaniesState extends State<Companies> {
           .set({
         'CompanyName': data.companyName,
         'Dept': double.parse(data.Debt) >= Payment
-            ? (double.parse(data.Debt) - Payment).toString()
+            ? (double.parse(data.Debt) - Payment).toStringAsFixed(2)
             : "0",
         'Received': double.parse(data.Debt) >= Payment
             ? data.Received
             : (double.parse(data.Received) + Payment - double.parse(data.Debt))
-                .toString()
+                .toStringAsFixed(2)
       });
       if (CompanyName != null && PaymentAmount!=null)  {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,8 +125,8 @@ class _CompaniesState extends State<Companies> {
           .child(CompanyName)
           .set({
         'CompanyName': data.companyName,
-        'Dept': double.parse(data.Received)>=Payment ? data.Debt : (double.parse(data.Debt)+Payment-double.parse(data.Received)).toString(),
-        'Received': double.parse(data.Received)>=Payment ? (double.parse(data.Received)-Payment).toString() : "0"
+        'Dept': double.parse(data.Received)>=Payment ? data.Debt : (double.parse(data.Debt)+Payment-double.parse(data.Received)).toStringAsFixed(2),
+        'Received': double.parse(data.Received)>=Payment ? (double.parse(data.Received)-Payment).toStringAsFixed(2) : "0"
       });
       if (CompanyName != null && PaymentAmount!=null)  {
         ScaffoldMessenger.of(context).showSnackBar(

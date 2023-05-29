@@ -224,7 +224,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                               'Id' : Uuid().v4(),
                               'Date': _selectedDate.toString(),
                               'Description': _description.text,
-                              'ExpenseAmount': _expenseAmount.text,
+                              'ExpenseAmount': int.parse(_expenseAmount.text),
                               'WhoWasExpense': _whoWasExpense.text,
                             });
                             ScaffoldMessenger.of(context).showSnackBar(

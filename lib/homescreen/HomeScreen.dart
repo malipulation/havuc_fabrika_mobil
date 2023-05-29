@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -47,23 +48,20 @@ class _GridMenuState extends State<GridMenu> {
   }
 
   @override
-
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ana Sayfa'),
         backgroundColor: Colors.deepPurple,
         leading: Builder(
-          builder: (context) =>
-              IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              ),
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
         ),
       ),
-      // Drawer ekleyin
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -82,10 +80,9 @@ class _GridMenuState extends State<GridMenu> {
                 },
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: _imageBytes != null ? MemoryImage(_imageBytes!) : null,
-                  // child: _imageBytes == null ? Image.network(_defaultImageUrl) : null,
+                  backgroundImage:
+                  _imageBytes != null ? MemoryImage(_imageBytes!) : null,
                 ),
-
               ),
               decoration: const BoxDecoration(
                 color: Colors.deepPurple,
@@ -104,7 +101,9 @@ class _GridMenuState extends State<GridMenu> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ExpenseListScreen(),
+                  ),
                 );
               },
             ),
@@ -113,7 +112,9 @@ class _GridMenuState extends State<GridMenu> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SaleListScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SaleListScreen(),
+                  ),
                 );
               },
             ),
@@ -122,7 +123,9 @@ class _GridMenuState extends State<GridMenu> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const WorkersPaymentScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const WorkersPaymentScreen(),
+                  ),
                 );
               },
             ),
@@ -131,62 +134,84 @@ class _GridMenuState extends State<GridMenu> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Companies()),
+                  MaterialPageRoute(
+                    builder: (context) => const Companies(),
+                  ),
                 );
               },
             ),
             ListTile(
               title: const Text('Çıkış'),
-              onTap:  ()async {
+              onTap: () async {
                 await _auth.signOut();
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SignInScreen()));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SignInScreen(),
+                  ),
+                );
               },
             ),
           ],
         ),
       ),
-      body: Container(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
-        height: MediaQuery
-            .of(context)
-            .size
-            .height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              hexStringToColor("CB2B93"),
-              hexStringToColor("9546C4"),
-              hexStringToColor("5E61F4")
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  hexStringToColor("CB2B93"),
+                  hexStringToColor("9546C4"),
+                  hexStringToColor("5E61F4")
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
           ),
-        ),
-        child:GridView.count(
-          crossAxisCount: 2,
-          padding: const EdgeInsets.all(16.0),
-          mainAxisSpacing: 16.0,
-          crossAxisSpacing: 16.0,
-          children: [
-            buildMenuItem(context, Icons.account_circle_sharp, 'İşçi Ekle'),
-            buildMenuItem(context, Icons.checklist_rtl_rounded, 'Listele'),
-            buildMenuItem(context, Icons.update, 'Paket Güncelle'),
-            buildMenuItem(context, Icons.add_shopping_cart_rounded, 'Giderler'),
-            buildMenuItem(context, Icons.point_of_sale_rounded, 'Satış Yap'),
-            buildMenuItem(context, Icons.settings, 'Ayarlar'),
-          ],
-        ),
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.3, // Logo'nun opaklığı ayarlanabilir
+              child: Transform.scale(
+                scale: 0.8, // Adjust the scale factor as desired (0.5 means 50% of the original size)
+                child: Image.asset(
+                  'assets/images/logo-no-background.png',
+                  fit: BoxFit.fitWidth,
+                ),
+              ),
+            ),
+          ),
 
+          Positioned.fill(
+            child: GridView.count(
+              crossAxisCount: 2, // Update this value with your desired number of items per row
+              padding: const EdgeInsets.all(16.0),
+              mainAxisSpacing: 16.0,
+              crossAxisSpacing: 16.0,
+              children: [
+                buildMenuItem(context, Icons.account_circle_sharp, 'İşçi Ekle'),
+                buildMenuItem(context, Icons.checklist_rtl_rounded, 'Listele'),
+                buildMenuItem(context, Icons.update, 'Paket Güncelle'),
+                buildMenuItem(context, Icons.add_shopping_cart_rounded, 'Giderler'),
+                buildMenuItem(context, Icons.point_of_sale_rounded, 'Satış Yap'),
+                buildMenuItem(context, Icons.settings, 'Ayarlar'),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
+
+
+
+
+
 }
+
 InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
   return InkWell(
     onTap: () {
@@ -195,31 +220,27 @@ InkWell buildMenuItem(BuildContext context, IconData iconData, String title) {
           context,
           MaterialPageRoute(builder: (context) => const AddWorkerScreen()),
         );
-      }
-      else if (title == 'Listele') {
+      } else if (title == 'Listele') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListWorkerScreen()),
         );
-      }
-      else if (title == 'Ayarlar') {
+      } else if (title == 'Ayarlar') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
-      }
-      else if (title == 'Giderler') {
+      } else if (title == 'Giderler') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ExpenseScreen()),
         );
-      }
-      else if (title == 'Satış Yap') {
+      } else if (title == 'Satış Yap') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SetSales()),
         );
-      }else if (title == 'Paket Güncelle') {
+      } else if (title == 'Paket Güncelle') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const UpdatePackageScreen()),

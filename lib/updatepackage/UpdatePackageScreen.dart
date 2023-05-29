@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -16,7 +17,7 @@ class Employee {
   final String nameSurname;
   final String id;
   final String date;
-  final String? queNumber;
+  final int? queNumber;
   List<Category> categories; // Değişiklik burada
 
   Employee({
@@ -218,7 +219,7 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
             nameSurname: data['NameSurname'],
             date: data['Date'],
             id: data['Id'].toString(),
-            queNumber: data['QueNumber'],
+            queNumber: (data['QueNumber']),
           );
         }).toList();
 
@@ -507,13 +508,19 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
                         .child(employee.nameSurname)
                         .child(cat.categoryName)
                         .set({
-                      'PackageCount': cat.wageCount +
-                          dbemp.categories
+                      'PackageCount': cat.wageCount.isEmpty
+                          ? dbemp.categories
                               .where((element) =>
                                   element.categoryName == cat.categoryName)
                               .first
-                              .wageCount +
-                          '-'
+                              .wageCount
+                          : cat.wageCount +
+                              '-' +
+                              dbemp.categories
+                                  .where((element) =>
+                                      element.categoryName == cat.categoryName)
+                                  .first
+                                  .wageCount
                     });
                     var emp = workerOSList
                         .where((element) =>
@@ -681,6 +688,9 @@ class _UpdatePackageScreenState extends State<UpdatePackageScreen> {
 
                                       return DataCell(
                                         TextFormField(
+                                          inputFormatters: <TextInputFormatter>[
+                                          FilteringTextInputFormatter.digitsOnly
+                                          ],
                                           controller: controller,
                                           keyboardType: TextInputType.number,
                                           decoration: InputDecoration(),

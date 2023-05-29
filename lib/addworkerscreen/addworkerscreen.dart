@@ -105,6 +105,11 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                         ),
                         child: TextFormField(
                           controller: _workerPhoneNumberController,
+                          inputFormatters: <
+                              TextInputFormatter>[
+                            FilteringTextInputFormatter
+                                .digitsOnly
+                          ],
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Telefon Numarası Giriniz',
@@ -138,7 +143,7 @@ class _AddWorkerScreenState extends State<AddWorkerScreen> {
                               'NameSurname': workerNameSurname,
                               'PhoneNumber': workerPhoneNumber,
                               'Id': Uuid().v4().toString(),
-                              'OverSupply': 0,
+                              'OverSupply': '0',
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(
