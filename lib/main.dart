@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
+import 'package:MHPro/signinscreen/SingInScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MHPro',
       theme: ThemeData(
         // This is the theme of your application.
         //

@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/homescreen/HomeScreen.dart';
-import 'package:havuc_fabrika_mobil/reusable_widgets/ReusableWidget.dart';
-import 'package:havuc_fabrika_mobil/signinscreen/SingInScreen.dart';
-import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:MHPro/homescreen/HomeScreen.dart';
+import 'package:MHPro/reusable_widgets/ReusableWidget.dart';
+import 'package:MHPro/signinscreen/SingInScreen.dart';
+import 'package:MHPro/utils/color_utils.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);

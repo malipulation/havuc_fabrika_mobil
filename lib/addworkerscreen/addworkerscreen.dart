@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:MHPro/utils/color_utils.dart';
 import 'package:uuid/uuid.dart';
 
 class AddWorkerScreen extends StatefulWidget {

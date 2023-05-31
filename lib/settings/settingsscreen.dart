@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:havuc_fabrika_mobil/settings/addcategoryscreen/addcategoryscreen.dart';
-import 'package:havuc_fabrika_mobil/settings/deletecategoryscreen/DeleteCategoryScreen.dart';
-import 'package:havuc_fabrika_mobil/settings/listcategoryscreen/ListCategoryScreen.dart';
-import 'package:havuc_fabrika_mobil/settings/updatecategoryscreen/UpdateCategoryScreen.dart';
-import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:MHPro/settings/addcategoryscreen/addcategoryscreen.dart';
+import 'package:MHPro/settings/deletecategoryscreen/DeleteCategoryScreen.dart';
+import 'package:MHPro/settings/listcategoryscreen/ListCategoryScreen.dart';
+import 'package:MHPro/settings/updatecategoryscreen/UpdateCategoryScreen.dart';
+import 'package:MHPro/utils/color_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 

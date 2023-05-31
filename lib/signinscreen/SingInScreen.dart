@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:havuc_fabrika_mobil/homescreen/HomeScreen.dart';
-import 'package:havuc_fabrika_mobil/utils/color_utils.dart';
+import 'package:MHPro/homescreen/HomeScreen.dart';
+import 'package:MHPro/utils/color_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../reusable_widgets/ReusableWidget.dart';
 import '../singupscreen/SignUpScreen.dart';
