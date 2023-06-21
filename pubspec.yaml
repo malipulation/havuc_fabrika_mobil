@@ -42,14 +42,14 @@ dependencies:
   firebase_auth: ^4.2.10
   image_picker: ^0.8.4
   firebase_database: ^10.0.1
-  intl: ^0.17.0
   bs_flutter_datatable: ^1.2.5
   bs_flutter: ^0.4.7
   email_validator: ^2.0.1
   shared_preferences: ^2.0.12
 
 #  firebase_database: ^8.0.0
-
+dependency_overrides:
+  intl: ^0.18.0
 
 dev_dependencies:
   change_app_package_name: ^1.1.0
